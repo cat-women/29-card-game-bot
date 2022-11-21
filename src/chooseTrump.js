@@ -15,24 +15,28 @@ function chooseTrump (payload) {
   const ownCards = payload.cards
   const lastCard = last(ownCards)
 
-  console.log()
-  trump = {}
-  ownCards.map(card => {
-    suit = getSuit(card)
-    if (trump[suit] === undefined) trump[suit] = 1
-    else trump[suit]++
+  possibleTrumpCard = {}
+
+  // count
+  ownCards.forEach(function (x) {
+    possibleTrumpCard[getSuit(x)] = (possibleTrumpCard[getSuit(x)] || 0) + 1
   })
 
-  let t = 0
-  let s = ''
-  for (var x in trump) {
-    if (t < trump[x]) 
-    t =  trump[x]
-    s = x
+  let max = 0
+  let suit = ''
+  
+  for (const [key, value] of Object.entries(possibleTrumpCard)) {
+    if (max < value) {
+      max = value
+      suit = key
+    } else if (max === value && key == 'J') {
+      max = value
+      suit = key
+    }
   }
-  console.log("trump is ",s)
+  console.log('trump is ', suit)
   return {
-    suit: s
+    suit: suit
   }
 }
 

@@ -17,58 +17,60 @@
 
 const MIN_BID = 16
 const PASS_BID = 0
+const MAX_BID = 28
 
 function bid (payload) {
   const cards = payload.cards
+  const bidHistory = payload.bidHistory
 
-  let faces = {
-    J: 0,
-    N: 0,
-    T: 0,
-    A: 0
-  }
   let bid = 0
-  let suits = {
-    c: 0,
-    d: 0,
-    h: 0,
-    s: 0
+
+  const faces = {}
+  const suits = {}
+  cards.forEach(function (x) {
+    faces[x[0]] = (faces[x[0]] || 0) + 1
+    suits[x[1]] = (suits[x[1]] || 0) + 1
+  })
+  console.log('cards', cards)
+  console.log('faces', faces)
+  console.log('suits', suits)
+
+  for (const [key, value] of Object.entries(faces)) {
+    if (key === 'J') bid += value * 3
+    if (key === '9') bid += value * 2
+    if (key == 'T' || key == '1') bid += value
   }
+  bid = 2 * bid
 
-  for (let x in cards) {
-    let card = cards[x][0]
-    let suit = cards[x][1]
-    if (card === 'J') faces.J++
-    if (card === 'N') faces.N++
-    if (card === 'T') faces.T++
-    if (card === 'A') faces.A++
-
-    if (suit === 'C') suits.c++
-    if (suit === 'D') suits.d++
-    if (suit === 'H') suits.h++
-    if (suit === 'S') suits.s++
+  for (const [key, value] of Object.entries(suits)) {
+    if (value >= 3) bid = MAX_BID
   }
-
-  bid = faces.J * 3 + faces.N * 2 + faces.A + faces.T
-
-  for (const key in suits) {
-    if (suits[key] > 1 && suits[key] <= 2) bid = 17
-    else if (suits[key] >= 2) {
-      bid = 19
-      break
-    }
-  }
-  if (payload.bidHistory.length === 0) {
-    const finalValue = bid < 16 ? MIN_BID : bid
-    // finalValue = 20
+  if (bidHistory.length === 0) {
+    //i'm first to bid
     return {
-      bid: finalValue
+      bid: MIN_BID
     }
   }
 
+  const myBid = bid < 16 ? MIN_BID : bid
+  
+  if (myBid > getHighestBid) {
+    myBid = getHighestBid(bidHistory) + 1
+
+    return {
+      bid: myBid
+    }
+  }
   return {
     bid: PASS_BID
   }
 }
 
+function getHighestBid (bidHistory) {
+  let bid = 0
+  bidHistory.forEach(x => {
+    if (bid < x[1] && x[0] !== 'A2') bid = x[1]
+    return bid
+  })
+}
 module.exports = bid
