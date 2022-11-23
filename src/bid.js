@@ -20,6 +20,7 @@ const PASS_BID = 0
 const MAX_BID = 28
 
 function bid (payload) {
+  console.log("=========================================================")
   const cards = payload.cards
   const bidHistory = payload.bidHistory
 
@@ -31,9 +32,9 @@ function bid (payload) {
     faces[x[0]] = (faces[x[0]] || 0) + 1
     suits[x[1]] = (suits[x[1]] || 0) + 1
   })
-  console.log('cards', cards)
-  console.log('faces', faces)
-  console.log('suits', suits)
+  // console.log('cards', cards)
+  // console.log('faces', faces)
+  // console.log('suits', suits)
 
   for (const [key, value] of Object.entries(faces)) {
     if (key === 'J') bid += value * 3

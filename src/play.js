@@ -1,5 +1,5 @@
 const { getSuitCards, last, getSuit, getFace, sortCard } = require('./shared')
-const Card = require('./card.js')
+const card = require('./card.js')
 /**
  * @payload
   {
@@ -54,14 +54,24 @@ function play (payload) {
   /** if we have the suit with respect to the first card, we throw it */
   if (ownSuitCards.length > 0) {
     const sortedSuitCard = sortCard(ownSuitCards)
+    // if opponent is sure to win throw zero card
+    if (isOpponetWin(thisRoundCards, sortedSuitCard))
+      return {
+        card: sortedSuitCard[0]
+      }
+
     // if partner is winnig
-    if (isPartnerWin(thisRoundCards) && thisRoundCards.length === 3)
-      return sortedSuitCard[0]
+    // if (isPartnerWin(thisRoundCards) && thisRoundCards.length === 3)
+    //   return {
+    //     card: sortedSuitCard[0]
+    //   }
 
     return {
       card: last(sortedSuitCard)
     }
   }
+  console.log('trmup suit :', trumpSuit, 'trump reveal :', trumpRevealed)
+  console.log('hand history legth', handsHistory.length)
 
   /**
    * we don't have cards that follow the suit
@@ -73,10 +83,17 @@ function play (payload) {
    *
    * 1. throw any card
    * 2. reveal the trump
+   *
+   *
+   * git ko
+   * one commit
    */
 
   /** trump is already revealed, and everyone knows the trump */
   if (trumpSuit && trumpRevealed) {
+    console.log('trump is revealed')
+    const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
+    
     const wasTrumpRevealInThisRound =
       trumpRevealed.hand === handsHistory.length + 1
     const didIRevealTheTrump = trumpRevealed.playerId === ownId
@@ -85,14 +102,11 @@ function play (payload) {
      * if I'm the one who revealed the trump in this round.
      */
     if (wasTrumpRevealInThisRound && didIRevealTheTrump) {
-      const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
 
       // if im the last one to throw and i have more than 1 trump card throw least value card
-      if (trumpSuitCards.length > 1 && payload.length === 2) {
+      if (trumpSuitCards.length > 1 && thisRoundCards.length === 3) {
         return { card: sortCard(trumpSuitCards)[0] }
       }
-
-
 
       /** player who revealed the trump should throw the trump suit card
        * im not last player throw higher value card
@@ -101,15 +115,17 @@ function play (payload) {
         card: last(sortCard(trumpSuitCards)) || last(ownCards)
       }
     }
+    
 
-    // return {
-    //   card: last(ownCards)
-    // }
+    return {
+      card: last(mySortedCard)
+    }
   }
 
   /**
    * trump is revealed only to me
    * this means we won the bidding phase, and set the trump
+   * im the bidder
    */
   if (trumpSuit && !trumpRevealed) {
     // if my partner is winning dont reveal trump throw last card that is zero card
@@ -129,14 +145,22 @@ function play (payload) {
   }
 
   /** trump has not yet been revealed, let's reveal the trump */
-  // return {
-  //   revealTrump: true
-  // }
+  return {
+    revealTrump: true
+  }
 }
 
 function isPartnerWin (playedCard) {
-  if (last(sortCard(playedCard)) === playedCard[1]) return true
-  else return false
+  if (last(sortCard(playedCard)) === playedCard[playedCard.length - 2])
+    return true
+  return false
+}
+
+function isOpponetWin (playedCard, mySortedCard) {
+  const sortedCard = sortCard(playedCard)
+  if (card[getFace(last(sortedCard))] > card[getFace(last(mySortedCard))])
+    return true
+  return false
 }
 
 module.exports = play
