@@ -40,9 +40,11 @@ function play (payload) {
   const ownId = payload.playerId
   // console.log(payload)
   const mySortedCard = sortCard(ownCards)
+  console.log('hand history', handsHistory)
 
-  /** we are the one to throw the first card in the hands */
+  /** we are the one to throw the first card in the hands  throw highest value card*/
   if (!thisRoundCards.length > 0) {
+    // *Todo: protect each card from each suit
     return {
       card: last(mySortedCard)
     }
@@ -54,24 +56,16 @@ function play (payload) {
   /** if we have the suit with respect to the first card, we throw it */
   if (ownSuitCards.length > 0) {
     const sortedSuitCard = sortCard(ownSuitCards)
-    // if opponent is sure to win throw zero card
-    if (isOpponetWin(thisRoundCards, sortedSuitCard))
+    // if opponent is sure to win, throw zero card
+    if (isOpponetWin(thisRoundCards, sortedSuitCard, trumpSuit))
       return {
         card: sortedSuitCard[0]
       }
-
-    // if partner is winnig
-    // if (isPartnerWin(thisRoundCards) && thisRoundCards.length === 3)
-    //   return {
-    //     card: sortedSuitCard[0]
-    //   }
 
     return {
       card: last(sortedSuitCard)
     }
   }
-  console.log('trmup suit :', trumpSuit, 'trump reveal :', trumpRevealed)
-  console.log('hand history legth', handsHistory.length)
 
   /**
    * we don't have cards that follow the suit
@@ -91,9 +85,17 @@ function play (payload) {
 
   /** trump is already revealed, and everyone knows the trump */
   if (trumpSuit && trumpRevealed) {
-    console.log('trump is revealed')
+    console.log('trump revealed')
+
     const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
-    
+    console.log('my trump suit are:--- ', trumpSuitCards)
+
+    //if i dont have the trumpsuit
+    if (trumpSuitCards.length === 0) {
+      return {
+        card: mySortedCard[0]
+      }
+    }
     const wasTrumpRevealInThisRound =
       trumpRevealed.hand === handsHistory.length + 1
     const didIRevealTheTrump = trumpRevealed.playerId === ownId
@@ -102,7 +104,6 @@ function play (payload) {
      * if I'm the one who revealed the trump in this round.
      */
     if (wasTrumpRevealInThisRound && didIRevealTheTrump) {
-
       // if im the last one to throw and i have more than 1 trump card throw least value card
       if (trumpSuitCards.length > 1 && thisRoundCards.length === 3) {
         return { card: sortCard(trumpSuitCards)[0] }
@@ -112,13 +113,15 @@ function play (payload) {
        * im not last player throw higher value card
        */
       return {
-        card: last(sortCard(trumpSuitCards)) || last(ownCards)
+        card: last(sortCard(trumpSuitCards)) || last(mySortedCard)
       }
     }
-    
-
+    if (isOpponetWin(thisRoundCards, mySortedCard, trumpSuit))
+      return {
+        card: trumpSuitCards[0]
+      }
     return {
-      card: last(mySortedCard)
+      card: last(trumpSuitCards)
     }
   }
 
@@ -129,18 +132,18 @@ function play (payload) {
    */
   if (trumpSuit && !trumpRevealed) {
     // if my partner is winning dont reveal trump throw last card that is zero card
-    if (isPartnerWin(thisRoundCards))
+
+    const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
+    if (trumpSuitCards.length > 0 || isPartnerWin(thisRoundCards))
       return {
         revealTrump: false,
         card: mySortedCard[0]
       }
 
-    const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
-
     return {
       /**  after revealing the trump, we must throw trump card */
       revealTrump: true,
-      card: last(trumpSuitCards) || last(ownCards)
+      card: last(sortedCard(trumpSuitCards)) || last(mySortedCard)
     }
   }
 
@@ -148,6 +151,9 @@ function play (payload) {
   return {
     revealTrump: true
   }
+
+  // console.log('trmup suit :', trumpSuit, 'trump reveal :', trumpRevealed)
+  // console.log('hand history legth', handsHistory.length)
 }
 
 function isPartnerWin (playedCard) {
@@ -156,8 +162,21 @@ function isPartnerWin (playedCard) {
   return false
 }
 
-function isOpponetWin (playedCard, mySortedCard) {
+function isOpponetWin (playedCard, mySortedCard, trumpSuit) {
   const sortedCard = sortCard(playedCard)
+
+  if (trumpSuit) {
+    const trumpSuitCards = getSuitCards(playedCard, trumpSuit)
+    console.log('trump in the played card ', trumpSuitCards)
+    const partnerPos = playedCard.length - 2
+    if (trumpSuitCards.length === 1 && playedCard.indexOf(trumpSuitCards[0]) === partnerPos)
+      return false
+
+    if (playedCard.indexOf(last(sortCard(trumpSuitCards))) !== partnerPos) return true
+
+    return true
+  }
+
   if (card[getFace(last(sortedCard))] > card[getFace(last(mySortedCard))])
     return true
   return false

@@ -20,10 +20,11 @@ const PASS_BID = 0
 const MAX_BID = 28
 
 function bid (payload) {
-  console.log("=========================================================")
+  console.log('=========================================================')
   const cards = payload.cards
   const bidHistory = payload.bidHistory
-
+  console.log('bid history', bidHistory)
+  console.log("card",cards)
   let bid = 0
 
   const faces = {}
@@ -41,8 +42,9 @@ function bid (payload) {
     if (key === '9') bid += value * 2
     if (key == 'T' || key == '1') bid += value
   }
+  console.log('bid based on my cards', bid)
   bid = 2 * bid
-
+  //only if you have j card
   for (const [key, value] of Object.entries(suits)) {
     if (value >= 3) bid = MAX_BID
   }
@@ -54,7 +56,7 @@ function bid (payload) {
   }
 
   const myBid = bid < 16 ? MIN_BID : bid
-  
+
   if (myBid > getHighestBid) {
     myBid = getHighestBid(bidHistory) + 1
 
