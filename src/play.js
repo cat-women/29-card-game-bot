@@ -40,7 +40,7 @@ function play (payload) {
   const ownId = payload.playerId
   // console.log(payload)
   const mySortedCard = sortCard(ownCards)
-  console.log('hand history', handsHistory)
+  // console.log('hand history', handsHistory)
 
   /** we are the one to throw the first card in the hands  throw highest value card*/
   if (!thisRoundCards.length > 0) {
@@ -85,10 +85,10 @@ function play (payload) {
 
   /** trump is already revealed, and everyone knows the trump */
   if (trumpSuit && trumpRevealed) {
-    console.log('trump revealed')
+    // console.log('trump revealed')
 
     const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
-    console.log('my trump suit are:--- ', trumpSuitCards)
+    // console.log('my trump suit are:--- ', trumpSuitCards)
 
     //if i dont have the trumpsuit
     if (trumpSuitCards.length === 0) {
@@ -134,7 +134,7 @@ function play (payload) {
     // if my partner is winning dont reveal trump throw last card that is zero card
 
     const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
-    if (trumpSuitCards.length > 0 || isPartnerWin(thisRoundCards))
+    if (trumpSuitCards.length === 0 || isPartnerWin(thisRoundCards))
       return {
         revealTrump: false,
         card: mySortedCard[0]
@@ -152,7 +152,7 @@ function play (payload) {
     revealTrump: true
   }
 
-  // console.log('trmup suit :', trumpSuit, 'trump reveal :', trumpRevealed)
+  console.log('trmup suit :', trumpSuit, 'trump reveal :', trumpRevealed)
   // console.log('hand history legth', handsHistory.length)
 }
 
@@ -167,8 +167,8 @@ function isOpponetWin (playedCard, mySortedCard, trumpSuit) {
 
   if (trumpSuit) {
     const trumpSuitCards = getSuitCards(playedCard, trumpSuit)
-    console.log('trump in the played card ', trumpSuitCards)
-    const partnerPos = playedCard.length - 2
+    // console.log('trump in the played card ', trumpSuitCards)
+    const partnerPos = (playedCard.length - 2+4) % 4
     if (trumpSuitCards.length === 1 && playedCard.indexOf(trumpSuitCards[0]) === partnerPos)
       return false
 
