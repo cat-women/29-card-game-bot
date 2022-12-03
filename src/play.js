@@ -143,7 +143,7 @@ function play (payload) {
     return {
       /**  after revealing the trump, we must throw trump card */
       revealTrump: true,
-      card: last(sortedCard(trumpSuitCards)) || last(mySortedCard)
+      card: last(sortCard(trumpSuitCards)) || last(mySortedCard)
     }
   }
 

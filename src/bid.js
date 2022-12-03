@@ -27,6 +27,12 @@ function bid (payload) {
   // console.log('bid history', bidHistory)
 
   // console.log('card', cards)
+  const faces = {}
+  const suits = {}
+  cards.forEach(function (x) {
+    faces[x[0]] = (faces[x[0]] || 0) + 1
+    suits[x[1]] = (suits[x[1]] || 0) + 1
+  })
   let bid = 0
 
   // console.log('cards', cards)
@@ -56,7 +62,7 @@ function bid (payload) {
   const highestBid = getHighestBid(bidHistory)
   if (bid === 17 && bid === highestBid) {
     return {
-      bid: 17
+      bid: highestBid+1
     }
   }
   if (bid === MAX_BID && highestBid > 19)
