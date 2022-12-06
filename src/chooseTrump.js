@@ -34,7 +34,6 @@ function chooseTrump (payload) {
       suit = key
     }
   }
-  console.log('trump is ', suit)
   return {
     suit: suit
   }

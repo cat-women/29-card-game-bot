@@ -1,7 +1,11 @@
+const { card, Deck } = require('./card')
+
 function last (items) {
   return items[items.length - 1]
 }
-
+function secondLast (items) {
+  return items[items.length - 2]
+}
 
 function getSuit (card) {
   return card[1]
@@ -15,18 +19,60 @@ function getSuitCards (cards, cardSuit) {
 }
 
 function sortCard (cards) {
-  var sortOrder = ['7', '8', 'Q', 'K', 'T', '1', '9', 'J' ]
+  var sortOrder = ['7', '8', 'Q', 'K', 'T', '1', '9', 'J']
   var ordering = {}
-  for (var i = 0; i < sortOrder.length; i++) ordering[sortOrder[i]] = i  
+  for (var i = 0; i < sortOrder.length; i++) ordering[sortOrder[i]] = i
   return cards.sort(function (a, b) {
     return ordering[a[0]] - ordering[b[0]]
   })
 }
 
+function cardsNotPlayed (cardSuit, handsHistory) {
+  const cards = Deck[cardSuit]
+  if (handsHistory.length === 0) return cards
+
+  let playedCards = []
+  handsHistory.forEach(handsHistory => {
+    // get only from that partcuar suit
+    let suitCards = getSuitCards(handsHistory[1], cardSuit)
+    playedCards = playedCards.concat(suitCards)
+  })
+
+  const winningCard = playedCards.forEach(card => {
+    const index = cards.indexOf(card)
+    if (index > -1) {
+      cards.splice(index, 1)
+    }
+  })
+  // remaining cards
+  return cards
+}
+
+function currentWinning (myCards, cardSuit, handsHistory) {
+  const remainingCards = cardsNotPlayed(cardSuit, handsHistory)
+  if (remainingCards.length === 0) return false
+  const mySortedCards = sortCard(myCards)
+  const myHighestValueCard = last(mySortedCards)
+  const highestValueCard = last(sortCard(remainingCards))
+  if (card[highestValueCard[0]] > card[myHighestValueCard[0]]) return false
+  return true
+}
+function getRemainingCards (allCards, myCards) {
+  allCards.map((card, index) => {
+    myCards.map(currentValue => {
+      if (currentValue === card) allCards.splice(index, 1)
+    })
+  })
+  return allCards
+}
 module.exports = {
   last,
+  secondLast,
   getSuit,
   getSuitCards,
   sortCard,
-  getFace
+  getFace,
+  cardsNotPlayed,
+  currentWinning,
+  getRemainingCards
 }

@@ -1,4 +1,14 @@
-const { getSuitCards, last, getSuit, getFace, sortCard } = require('./shared')
+const {
+  last,
+  secondLast,
+  getSuit,
+  getSuitCards,
+  sortCard,
+  getFace,
+  cardsNotPlayed,
+  currentWinning,
+  getRemainingCards
+} = require('./shared')
 const card = require('./card.js')
 /**
  * @payload
@@ -38,64 +48,113 @@ function play (payload) {
   const trumpRevealed = payload.trumpRevealed
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
-  // console.log(payload)
-  const mySortedCard = sortCard(ownCards)
-  // console.log('hand history', handsHistory)
-
   /** we are the one to throw the first card in the hands  throw highest value card*/
-  if (!thisRoundCards.length > 0) {
+  if (handsHistory.length === 0 && thisRoundCards.length === 0) {
+    const myCards = sortCard(ownCards)
+    if (getFace(last(myCards)) === 'J')
+      return {
+        card: last(myCards)
+      }
+
+    return {
+      card: myCards[0]
+    }
+  }
+  if (thisRoundCards.length === 0) {
     // *Todo: protect each card from each suit
     return {
-      card: last(mySortedCard)
+      card: firstHand(trumpSuit, trumpRevealed, ownCards, handsHistory)
     }
   }
 
   const firstCardSuit = getSuit(thisRoundCards[0])
+  const myCards = ownCards.slice()
   const ownSuitCards = getSuitCards(ownCards, firstCardSuit)
 
   /** if we have the suit with respect to the first card, we throw it */
   if (ownSuitCards.length > 0) {
-    const sortedSuitCard = sortCard(ownSuitCards)
-    // if opponent is sure to win, throw zero card
-    if (isOpponetWin(thisRoundCards, sortedSuitCard, trumpSuit))
-      return {
-        card: sortedSuitCard[0]
+    const sortedSuitCards = sortCard(ownSuitCards)
+    if (trumpSuit && trumpRevealed) {
+      // i have card from same suit but i dont trump is already reveal
+      if (thisRoundCards.length === 3) {
+        if (
+          isOpponetWin(
+            thisRoundCards,
+            sortedSuitCards,
+            trumpSuit,
+            trumpRevealed,
+            handsHistory
+          )
+        )
+          return {
+            card: sortedSuitCards[0]
+          }
       }
+      const remainingTrumpCards = cardsNotPlayed(trumpSuit, handsHistory)
+      const myTrumpSuit = getSuitCards(myCards, trumpSuit)
+      const playedTrumpCards = getSuitCards(thisRoundCards, trumpSuit)
+      const remainingSuitCards = cardsNotPlayed(
+        getSuit(thisRoundCards[0]),
+        handsHistory
+      )
 
+      const playedCards = thisRoundCards.slice()
+
+      // no trump cards left
+      if (
+        remainingTrumpCards.length + myTrumpSuit.length + playedCards.length ===
+          8 &&
+        card[getFace(last(sortCard(remainingSuitCards)))] <
+          card[getFace(last(sortedSuitCards))]
+      )
+        return {
+          card: last(sortedSuitCards)
+        }
+
+      return {
+        card: sortedSuitCards[0]
+      }
+    }
+    if (
+      isOpponetWin(
+        thisRoundCards,
+        sortedSuitCards,
+        trumpSuit,
+        trumpRevealed,
+        handsHistory
+      )
+    )
+      return {
+        card: sortedSuitCards[0]
+      }
     return {
-      card: last(sortedSuitCard)
+      card: last(sortedSuitCards)
     }
   }
-
-  /**
-   * we don't have cards that follow the suit
-   * @example
-   *  the first player played "7H" (7 of hearts)
-   *  we don't have any cards of suit "hearts"
-   *
-   * We could either
-   *
-   * 1. throw any card
-   * 2. reveal the trump
-   *
-   *
-   * git ko
-   * one commit
-   */
-
   /** trump is already revealed, and everyone knows the trump */
   if (trumpSuit && trumpRevealed) {
-    // console.log('trump revealed')
-
+    const mySortedCards = sortCard(ownCards)
     const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
-    // console.log('my trump suit are:--- ', trumpSuitCards)
 
     //if i dont have the trumpsuit
     if (trumpSuitCards.length === 0) {
+      if (
+        isOpponetWin(
+          thisRoundCards,
+          myCards,
+          trumpSuit,
+          trumpRevealed,
+          handsHistory
+        )
+      )
+        return {
+          card: mySortedCards[0]
+        }
       return {
-        card: mySortedCard[0]
+        card: last(mySortedCards)
       }
     }
+
     const wasTrumpRevealInThisRound =
       trumpRevealed.hand === handsHistory.length + 1
     const didIRevealTheTrump = trumpRevealed.playerId === ownId
@@ -113,23 +172,69 @@ function play (payload) {
        * im not last player throw higher value card
        */
       return {
-        card: last(sortCard(trumpSuitCards)) || last(mySortedCard)
+        card: last(sortCard(trumpSuitCards)) || mySortedCards[0]
       }
     }
-    if (isOpponetWin(thisRoundCards, mySortedCard, trumpSuit))
+    // I have trump card
+
+    // this is final round card
+    if (thisRoundCards.length !== 3) {
+      const playedTrumpcards = getSuitCards(thisRoundCards, trumpSuit)
+      if (playedTrumpcards.length === 0) {
+        // i have winning trump card
+        if (currentWinning(trumpSuitCards, trumpSuit, handsHistory))
+          return {
+            card: last(sortCard(trumpSuitCards))
+          }
+        return {
+          card: mySortedCards[0]
+        }
+      }
+      if (
+        isOpponetWin(
+          thisRoundCards,
+          trumpSuitCards,
+          trumpSuit,
+          trumpRevealed,
+          handsHistory
+        )
+      )
+        return {
+          card: mySortedCards[0]
+        }
+
+      return {
+        card: last(mySortedCards)
+      }
+    }
+    // for the final hand
+    if (
+      !isOpponetWin(
+        thisRoundCards,
+        trumpSuitCards,
+        trumpSuit,
+        trumpRevealed,
+        handsHistory
+      )
+    )
+      return {
+        card: last(mySortedCards)
+      }
+    // opoennet is winning, check trump played
+    const playedTrumpcards = getSuitCards(thisRoundCards, trumpSuit)
+    if (playedTrumpcards.length === 0)
       return {
         card: trumpSuitCards[0]
       }
     return {
-      card: last(trumpSuitCards)
+      card: mySortedCards[0]
     }
   }
 
-  /**
-   * trump is revealed only to me
-   * this means we won the bidding phase, and set the trump
-   * im the bidder
-   */
+  if (ownCards.length === 1)
+    return {
+      card: ownCards[0]
+    }
   if (trumpSuit && !trumpRevealed) {
     // if my partner is winning dont reveal trump throw last card that is zero card
 
@@ -143,7 +248,7 @@ function play (payload) {
     return {
       /**  after revealing the trump, we must throw trump card */
       revealTrump: true,
-      card: last(sortCard(trumpSuitCards)) || last(mySortedCard)
+      card: last(sortCard(trumpSuitCards)) || last(mySortedCards)
     }
   }
 
@@ -151,9 +256,79 @@ function play (payload) {
   return {
     revealTrump: true
   }
+}
+function firstHand (trumpSuit, trumpRevealed, myCards, handsHistory) {
+  const orginalMyCards = myCards.slice()
+  const mySortedCards = sortCard(myCards)
 
-  console.log('trmup suit :', trumpSuit, 'trump reveal :', trumpRevealed)
-  // console.log('hand history legth', handsHistory.length)
+  if (trumpSuit && trumpRevealed) {
+    trumpSuitCards = getSuitCards(myCards, trumpSuit)
+    // i dont have trump suit
+    if (trumpSuitCards.length === 0) {
+      // check other have trump suit or not
+      const trumpRemaining = cardsNotPlayed(trumpSuit, handsHistory)
+      // all trump are played
+      if (trumpRemaining.length === 0) {
+        // my first highest card is current winning card
+        if (currentWinning(mySortedCards, trumpSuit, handsHistory))
+          return last(mySortedCard)
+
+        // check for second winngin card
+        const mySortedCardsOriginal = mySortedCards.slice()
+        mySortedCards.splice(myCards.length - 1, 1)
+        if (currentWinning(mySortedCards, trumpSuit, handsHistory))
+          return last(mySortedCards)
+
+        // check for third winngin card
+        mySortedCards.splice(myCards.length - 1, 1)
+        if (currentWinning(mySortedCards, trumpSuit, handsHistory))
+          return last(mySortedCards)
+        return mySortedCardsOriginal[0]
+      }
+      // oppoent might have trump card
+      return mySortedCards[0]
+    }
+    const trumpRemaining = cardsNotPlayed(trumpSuit, handsHistory)
+    // other also dont have trump card
+    if (trumpRemaining.length === 0) {
+      // my first highest card is current winning card
+      if (currentWinning(mySortedCards, trumpSuit, handsHistory))
+        return last(mySortedCards)
+
+      // check for second winngin card
+      const mySortedCardsOriginal = mySortedCards.slice()
+      mySortedCards.slice(myCards.length - 1, 1)
+      if (currentWinning(mySortedCards, trumpSuit, handsHistory))
+        return last(mySortedCards)
+
+      //i dont have winnig trump card
+      return last(trumpSuitCards)
+    }
+    const opponentCards = getRemainingCards(trumpRemaining, trumpSuitCards)
+    if (
+      card[getFace(last(sortCard(opponentCards)))] >
+      card[getFace(last(sortCard(trumpSuitCards)))]
+    )
+      return mySortedCards[0]
+    return last(sortCard(trumpSuitCards))
+  }
+  //trump not revealed
+  // my first highest card is current winning card
+  if (currentWinning(mySortedCards, getSuit(mySortedCards[0]), handsHistory))
+    return last(mySortedCards)
+
+  // check for second winngin card
+  const mySortedCardsOriginal = mySortedCards.slice()
+  mySortedCards.splice(myCards.length - 1, 1)
+  if (currentWinning(mySortedCards, getSuit(mySortedCards[0]), handsHistory))
+    return last(mySortedCards)
+
+  // check for third winngin card
+  mySortedCards.splice(myCards.length - 1, 1)
+  if (currentWinning(mySortedCards, getSuit(mySortedCards[0]), handsHistory))
+    return last(mySortedCards)
+
+  return mySortedCardsOriginal[0]
 }
 
 function isPartnerWin (playedCard) {
@@ -162,24 +337,71 @@ function isPartnerWin (playedCard) {
   return false
 }
 
-function isOpponetWin (playedCard, mySortedCard, trumpSuit) {
-  const sortedCard = sortCard(playedCard)
-
+function isOpponetWin (
+  playedCards,
+  mySortedCards,
+  trumpSuit,
+  trumpRevealed,
+  handsHistory
+) {
+  orginalPlayedCards = playedCards.slice()
+  const sortedCardPlayedCards = sortCard(playedCards)
   if (trumpSuit) {
-    const trumpSuitCards = getSuitCards(playedCard, trumpSuit)
-    // console.log('trump in the played card ', trumpSuitCards)
-    const partnerPos = (playedCard.length - 2+4) % 4
-    if (trumpSuitCards.length === 1 && playedCard.indexOf(trumpSuitCards[0]) === partnerPos)
+    const trumpSuitCards = getSuitCards(playedCards, trumpSuit)
+    const partnerPos = (playedCards.length - 2 + 4) % 4
+
+    if (
+      trumpSuitCards.length === 1 &&
+      orginalPlayedCards.indexOf(trumpSuitCards[0]) === partnerPos
+    )
       return false
 
-    if (playedCard.indexOf(last(sortCard(trumpSuitCards))) !== partnerPos) return true
-
+    if (
+      orginalPlayedCards.indexOf(last(sortCard(trumpSuitCards))) === partnerPos
+    )
+      return false
+    // trump card not played
+    if (
+      trumpSuitCards.length === 0 &&
+      currentWinning(
+        mySortedCards,
+        getSuit(orginalPlayedCards[0]),
+        handsHistory
+      )
+    )
+      return false
     return true
   }
-
-  if (card[getFace(last(sortedCard))] > card[getFace(last(mySortedCard))])
-    return true
-  return false
+  if (
+    currentWinning(mySortedCards, getSuit(orginalPlayedCards[0]), handsHistory)
+  )
+    return false
+  return true
 }
 
 module.exports = play
+/*
+
+// Online Javascript Editor for free
+// Write, Edit and Run your Javascript code using JS Online Compiler
+
+console.log("Welcome to Programiz!");
+
+
+const playersIds = ['you-0','op-0','you-1','op-1']
+const playedCards = ['9S','JS','KS']
+
+const playerId = 'you-0'
+
+
+const wiiningCard = 'JS'
+const playerIndex = playersIds.indexOf(playerId)
+const winningIndexInPlayedCard = playedCards.indexOf(wiiningCard)
+const result = (playerIndex+winningIndexInPlayedCard+4 - playedCards.length)%4
+
+
+console.log(playersIds[result])
+
+console.log(result)
+
+*/
