@@ -14,5 +14,4 @@ const Deck = {
   H: ['JH', '9H', '1H', 'TH', 'KH', 'QH', '8H', '7H'],
   S: ['JS', '9S', '1S', 'TS', 'KS', 'QS', '8S', '7S']
 }
-heartSuit = ['J', '9', '1', 'T', 'K', 'Q', '8', '7']
 module.exports = {card,Deck}

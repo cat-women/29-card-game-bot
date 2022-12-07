@@ -8,39 +8,12 @@ const {
   cardsNotPlayed,
   currentWinning,
   getRemainingCards
-} = require('./shared')
-const card = require('./card.js')
-/**
- * @payload
-  {
-    "playerId": "A2", // own player id
-    "playerIds": ["A1", "B1", "A2", "B2"], // player ids in order
-    "timeRemaining": 1500,
-    "teams": [
-      { "players": ["A1", "A2"], "bid": 17, "won": 0 }, // first team information
-      { "players": ["B1", "B2"], "bid": 0, "won": 4 }, // second team information
-    ],
-    "cards": ["JS", "TS", "KH", "9C", "JD", "7D", "8D"], // own cards
-    "bidHistory": [["A1", 16], ["B1",17], ["A1", 17], ["B1", 0], ["A2", 0], ["B2", 0]], // bidding history in chronological order
-    "played": ["9S", "1S", "8S"],
-    "handsHistory": [
-        [
-          "A1", // player who threw the first card ("7H") 
-          ["7H", "1H", "8H", "JH"], // cards that thrown in the first hand
-          "B2" // winner of this hand
-        ]
-    ],
-    // represents the suit if available, the trumpSuit is only present for the player who reveals the trump
-    // after the trump is revealed, the trumpSuit is present for all the players
-    "trumpSuit": false | "H",
+} = require('../shared')
 
-    // only after the trump is revealed by the player the information is revealed
-    "trumpRevealed": false | {
-      hand: 2, // represents the hand at which the trump was revealed
-      playerId: "A2", // the player who revealed the trump
-    },
-  }
- */
+const card = require('../card.js')
+const firstHand = require('./firstHand')
+const fourthHand = require('./fourthHand')
+
 function play (payload) {
   const ownCards = payload.cards
   const thisRoundCards = payload.played
@@ -48,23 +21,32 @@ function play (payload) {
   const trumpRevealed = payload.trumpRevealed
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
-  /** we are the one to throw the first card in the hands  throw highest value card*/
+
+  // first move of game
   if (handsHistory.length === 0 && thisRoundCards.length === 0) {
     const myCards = sortCard(ownCards)
     if (getFace(last(myCards)) === 'J')
       return {
         card: last(myCards)
       }
-
     return {
       card: myCards[0]
     }
   }
+  // first hand case
   if (thisRoundCards.length === 0) {
-    // *Todo: protect each card from each suit
     return {
-      card: firstHand(trumpSuit, trumpRevealed, ownCards, handsHistory)
+      card: firstHand(ownCards, trumpSuit, trumpRevealed, handsHistory)
     }
+  }
+
+  // first hand case
+  if (thisRoundCards.length === 3) {
+    const cardToPlay = fourthHand(payload)
+    if (cardToPlay !== 0 )
+      return {
+        card: fourthHand(payload)
+      }
   }
 
   const firstCardSuit = getSuit(thisRoundCards[0])
@@ -242,7 +224,7 @@ function play (payload) {
     if (trumpSuitCards.length === 0 || isPartnerWin(thisRoundCards))
       return {
         revealTrump: false,
-        card: mySortedCard[0]
+        card: mySortedCards[0]
       }
 
     return {
@@ -257,80 +239,6 @@ function play (payload) {
     revealTrump: true
   }
 }
-function firstHand (trumpSuit, trumpRevealed, myCards, handsHistory) {
-  const orginalMyCards = myCards.slice()
-  const mySortedCards = sortCard(myCards)
-
-  if (trumpSuit && trumpRevealed) {
-    trumpSuitCards = getSuitCards(myCards, trumpSuit)
-    // i dont have trump suit
-    if (trumpSuitCards.length === 0) {
-      // check other have trump suit or not
-      const trumpRemaining = cardsNotPlayed(trumpSuit, handsHistory)
-      // all trump are played
-      if (trumpRemaining.length === 0) {
-        // my first highest card is current winning card
-        if (currentWinning(mySortedCards, trumpSuit, handsHistory))
-          return last(mySortedCard)
-
-        // check for second winngin card
-        const mySortedCardsOriginal = mySortedCards.slice()
-        mySortedCards.splice(myCards.length - 1, 1)
-        if (currentWinning(mySortedCards, trumpSuit, handsHistory))
-          return last(mySortedCards)
-
-        // check for third winngin card
-        mySortedCards.splice(myCards.length - 1, 1)
-        if (currentWinning(mySortedCards, trumpSuit, handsHistory))
-          return last(mySortedCards)
-        return mySortedCardsOriginal[0]
-      }
-      // oppoent might have trump card
-      return mySortedCards[0]
-    }
-    const trumpRemaining = cardsNotPlayed(trumpSuit, handsHistory)
-    // other also dont have trump card
-    if (trumpRemaining.length === 0) {
-      // my first highest card is current winning card
-      if (currentWinning(mySortedCards, trumpSuit, handsHistory))
-        return last(mySortedCards)
-
-      // check for second winngin card
-      const mySortedCardsOriginal = mySortedCards.slice()
-      mySortedCards.slice(myCards.length - 1, 1)
-      if (currentWinning(mySortedCards, trumpSuit, handsHistory))
-        return last(mySortedCards)
-
-      //i dont have winnig trump card
-      return last(trumpSuitCards)
-    }
-    const opponentCards = getRemainingCards(trumpRemaining, trumpSuitCards)
-    if (
-      card[getFace(last(sortCard(opponentCards)))] >
-      card[getFace(last(sortCard(trumpSuitCards)))]
-    )
-      return mySortedCards[0]
-    return last(sortCard(trumpSuitCards))
-  }
-  //trump not revealed
-  // my first highest card is current winning card
-  if (currentWinning(mySortedCards, getSuit(mySortedCards[0]), handsHistory))
-    return last(mySortedCards)
-
-  // check for second winngin card
-  const mySortedCardsOriginal = mySortedCards.slice()
-  mySortedCards.splice(myCards.length - 1, 1)
-  if (currentWinning(mySortedCards, getSuit(mySortedCards[0]), handsHistory))
-    return last(mySortedCards)
-
-  // check for third winngin card
-  mySortedCards.splice(myCards.length - 1, 1)
-  if (currentWinning(mySortedCards, getSuit(mySortedCards[0]), handsHistory))
-    return last(mySortedCards)
-
-  return mySortedCardsOriginal[0]
-}
-
 function isPartnerWin (playedCard) {
   if (last(sortCard(playedCard)) === playedCard[playedCard.length - 2])
     return true
@@ -381,11 +289,6 @@ function isOpponetWin (
 
 module.exports = play
 /*
-
-// Online Javascript Editor for free
-// Write, Edit and Run your Javascript code using JS Online Compiler
-
-console.log("Welcome to Programiz!");
 
 
 const playersIds = ['you-0','op-0','you-1','op-1']

@@ -65,6 +65,11 @@ function getRemainingCards (allCards, myCards) {
   })
   return allCards
 }
+
+function isHigherCard (myCard, opponentCard) {
+  if (card[getFace(last(myCard))] > card[getFace(opponentCard)]) return true
+  return false
+}
 module.exports = {
   last,
   secondLast,
@@ -74,5 +79,6 @@ module.exports = {
   getFace,
   cardsNotPlayed,
   currentWinning,
-  getRemainingCards
+  getRemainingCards,
+  isHigherCard
 }
