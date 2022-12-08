@@ -21,6 +21,7 @@ function play (payload) {
   const trumpRevealed = payload.trumpRevealed
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
+  const playersIds = payload.playerIds
 
   // first move of game
   if (handsHistory.length === 0 && thisRoundCards.length === 0) {
@@ -42,16 +43,25 @@ function play (payload) {
 
   // first hand case
   if (thisRoundCards.length === 3) {
-    const cardToPlay = fourthHand(payload)
-    if (cardToPlay !== 0 )
+    const cardToPlay = fourthHand(
+      ownId,
+      ownCards,
+      thisRoundCards,
+      trumpSuit,
+      trumpRevealed,
+      handsHistory,
+      playersIds
+    )
+    if (cardToPlay !== 0)
       return {
-        card: fourthHand(payload)
+        card: cardToPlay
       }
   }
 
   const firstCardSuit = getSuit(thisRoundCards[0])
   const myCards = ownCards.slice()
   const ownSuitCards = getSuitCards(ownCards, firstCardSuit)
+  const mySortedCards = sortCard(ownCards)
 
   /** if we have the suit with respect to the first card, we throw it */
   if (ownSuitCards.length > 0) {
@@ -115,7 +125,8 @@ function play (payload) {
   }
   /** trump is already revealed, and everyone knows the trump */
   if (trumpSuit && trumpRevealed) {
-    const mySortedCards = sortCard(ownCards)
+    console.log('trump revealed ')
+
     const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
 
     //if i dont have the trumpsuit

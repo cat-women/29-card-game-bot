@@ -15,25 +15,27 @@ const iRevealTrump = require('./iRevealTrump')
 
 const card = require('../card.js')
 
-function fourthHand (payload) {
-  const ownId = payload.playerId
-  const ownCards = payload.cards
+function fourthHand (ownId,ownCards,playedCards,trumpSuit,trumpRevealed,handsHistory,playersIds) {
+  
+  // const ownId = payload.playerId
+  // const ownCards = payload.cards 
+
   const myCards = ownCards.slice()
 
-  const playedCards = payload.played
+  // const playedCards = payload.played
   const playedSuit = getSuit(playedCards[0])
-
+console.log("played suit ",playedSuit)
   const mySortedCards = sortCard(ownCards)
   const ownSuitCards = getSuitCards(ownCards, playedSuit)
 
   const orinalPlayedCards = playedCards.slice()
   const sortedPlayedCards = sortCard(playedCards)
 
-  const trumpSuit = payload.trumpSuit
-  const trumpRevealed = payload.trumpRevealed
+  // const trumpSuit = payload.trumpSuit
+  // const trumpRevealed = payload.trumpRevealed
 
-  const handsHistory = payload.handsHistory
-  const playersIds = payload.playerIds
+  // const handsHistory = payload.handsHistory
+  // const playersIds = payload.playerIds
 
   const [winningCard, winner] = whoIsWinning(
     ownId,
@@ -46,16 +48,15 @@ function fourthHand (payload) {
   // i have same suit card
   if (ownSuitCards.length > 0) {
     const sortedSuitCards = sortCard(ownSuitCards)
-
-    console.log("players id",playersIds,getSuit(winningCard))
-
     // opponent is winning
     if (winner !== playersIds[2]) {
-      if (trumpRevealed && getSuit(winningCard) === trumpSuit)
-        return sortedSuitCards[0]
+      if (trumpRevealed && getSuit(winningCard) === trumpSuit) {
 
-      if (!isHigherCard(last(sortedSuitCards), winningCard))
         return sortedSuitCards[0]
+      }
+
+      if (!isHigherCard(last(sortedSuitCards), winningCard)){
+        return sortedSuitCards[0]}
     }
     return last(sortedSuitCards)
   }

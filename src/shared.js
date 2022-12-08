@@ -57,6 +57,7 @@ function currentWinning (myCards, cardSuit, handsHistory) {
   if (card[highestValueCard[0]] > card[myHighestValueCard[0]]) return false
   return true
 }
+
 function getRemainingCards (allCards, myCards) {
   allCards.map((card, index) => {
     myCards.map(currentValue => {
@@ -70,6 +71,9 @@ function isHigherCard (myCard, opponentCard) {
   if (card[getFace(last(myCard))] > card[getFace(opponentCard)]) return true
   return false
 }
+
+
+
 module.exports = {
   last,
   secondLast,
