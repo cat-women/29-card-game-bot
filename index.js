@@ -3,7 +3,7 @@ const cors = require("cors");
 
 const bid = require("./src/bid.js");
 const chooseTrump = require("./src/chooseTrump");
-const play = require("./src/play/index");
+const play = require("./src/play/play");
 
 const app = express();
 const port = 8001;

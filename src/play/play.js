@@ -22,7 +22,10 @@ function play (payload) {
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
   const playersIds = payload.playerIds
-
+if(ownCards.length === 1){
+  console.log("playersid",playersIds)
+  console.log(handsHistory)
+}
   // first move of game
   if (handsHistory.length === 0 && thisRoundCards.length === 0) {
     const myCards = sortCard(ownCards)

@@ -22,7 +22,10 @@ RUN npm install
 
 # RUN command runs the command in command line
 RUN mkdir ./src
+RUN mkdir ./src/play
+
 ADD ./src/* ./src/
+ADD ./src/play/* ./src/play/
 
 ADD index.js .
 

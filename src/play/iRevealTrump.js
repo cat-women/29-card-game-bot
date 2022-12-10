@@ -5,11 +5,14 @@ function iRevealTrump (myCards, playedCards, trumpSuit) {
   const mySortedCards = sortCard(myCards)
   const sortedTrumpSuitCards = sortCard(trumpSuitCards)
   const playedTrumpcards = getSuitCards(playedCards, trumpCard)
+  // console.log(sortedTrumpSuitCards)
+  // console.log(trumpSuit)
 
   if (trumpSuitCards.length === 0) return mySortedCards[0]
 
   if (playedCards.length === 3 && playedTrumpcards.length === 0)
     return sortedTrumpSuitCards[0]
+
   return last(sortedTrumpSuitCards)
 }
 

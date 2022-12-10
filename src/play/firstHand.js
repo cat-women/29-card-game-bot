@@ -40,11 +40,11 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
         }
         // check for second winngin card
         const mySortedCardsOriginal = mySortedCards.slice()
-        while (mySortedCards.length > 0) {
+        while (mySortedCards.length === 1) {
           let highestCard = mySortedCards.splice(myCards.length - 1, 1)
-
+          console.log('all trump played ', mySortedCards, highestCard)
           if (
-            currentWinning(mySortedCards, getSuit(highestCard), handsHistory)
+            currentWinning(mySortedCards, getSuit(highestCard[0]), handsHistory)
           ) {
             console.log('the second card is winning ')
             return last(mySortedCards)
@@ -79,12 +79,11 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
     const trumpSuitCards = getSuitCards(myCards, trumpSuit)
     const nonTrumpCards = getRemainingCards(myCards, trumpSuitCards)
 
-    while (nonTrumpCards.length > 0) {
+    while (nonTrumpCards.length === 1) {
       let highestCard = nonTrumpCards.splice(nonTrumpCards.length - 1, 1)
-
-      if (currentWinning(nonTrumpCards, getSuit(highestCard), handsHistory)) {
+      console.log('non trump card', nonTrumpCards, highestCard)
+      if (currentWinning(nonTrumpCards, getSuit(highestCard[0]), handsHistory))
         return last(nonTrumpCards)
-      }
     }
   }
   //trump not revealed

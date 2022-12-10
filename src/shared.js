@@ -29,6 +29,8 @@ function sortCard (cards) {
 
 function cardsNotPlayed (cardSuit, handsHistory) {
   const cards = Deck[cardSuit]
+  console.log("cars not played ",cardSuit,cards)
+
   if (handsHistory.length === 0) return cards
 
   let playedCards = []
