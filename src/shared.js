@@ -29,7 +29,7 @@ function sortCard (cards) {
 
 function cardsNotPlayed (cardSuit, handsHistory) {
   const cards = Deck[cardSuit]
-  console.log("cars not played ",cardSuit,cards)
+  console.log('cars not played ', cardSuit, cards)
 
   if (handsHistory.length === 0) return cards
 
@@ -52,15 +52,19 @@ function cardsNotPlayed (cardSuit, handsHistory) {
 
 function currentWinning (myCards, cardSuit, handsHistory) {
   const remainingCards = cardsNotPlayed(cardSuit, handsHistory)
-  if (remainingCards.length === 0) return false
+  if (remainingCards.length === 0) return true
+
   const mySortedCards = sortCard(myCards)
   const myHighestValueCard = last(mySortedCards)
+
   const highestValueCard = last(sortCard(remainingCards))
+
   if (card[highestValueCard[0]] > card[myHighestValueCard[0]]) return false
   return true
 }
 
 function getRemainingCards (allCards, myCards) {
+  if (myCards.length === 0) return allCards
   allCards.map((card, index) => {
     myCards.map(currentValue => {
       if (currentValue === card) allCards.splice(index, 1)
@@ -73,8 +77,6 @@ function isHigherCard (myCard, opponentCard) {
   if (card[getFace(last(myCard))] > card[getFace(opponentCard)]) return true
   return false
 }
-
-
 
 module.exports = {
   last,

@@ -1,10 +1,22 @@
-const { getSuitCards, sortCard } = require('../shared')
+const {
+  last,
+  secondLast,
+  getSuit,
+  getSuitCards,
+  sortCard,
+  getFace,
+  cardsNotPlayed,
+  currentWinning,
+  getRemainingCards,
+  isHigherCard
+} = require('../shared')
+
 
 function iRevealTrump (myCards, playedCards, trumpSuit) {
-  const trumpSuitCards = getSuitCards(myCards, trumpCard)
+  const trumpSuitCards = getSuitCards(myCards, trumpSuit)
   const mySortedCards = sortCard(myCards)
   const sortedTrumpSuitCards = sortCard(trumpSuitCards)
-  const playedTrumpcards = getSuitCards(playedCards, trumpCard)
+  const playedTrumpcards = getSuitCards(playedCards, trumpSuit)
   // console.log(sortedTrumpSuitCards)
   // console.log(trumpSuit)
 

@@ -13,6 +13,7 @@ const {
 const card = require('../card.js')
 const firstHand = require('./firstHand')
 const fourthHand = require('./fourthHand')
+const thirdHand = require('./thirdHand')
 
 function play (payload) {
   const ownCards = payload.cards
@@ -22,10 +23,11 @@ function play (payload) {
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
   const playersIds = payload.playerIds
-if(ownCards.length === 1){
-  console.log("playersid",playersIds)
-  console.log(handsHistory)
-}
+
+// if(ownCards.length === 1){
+//   console.log("playersid",playersIds)
+//   console.log(handsHistory)
+// }
   // first move of game
   if (handsHistory.length === 0 && thisRoundCards.length === 0) {
     const myCards = sortCard(ownCards)
@@ -44,7 +46,25 @@ if(ownCards.length === 1){
     }
   }
 
-  // first hand case
+
+  // third hand case
+  if (thisRoundCards.length === 2) {
+    const cardToPlay = thirdHand(
+      ownId,
+      ownCards,
+      thisRoundCards,
+      trumpSuit,
+      trumpRevealed,
+      handsHistory,
+      playersIds
+    )
+    if (cardToPlay !== 0)
+      return {
+        card: cardToPlay
+      }
+  }
+
+  // fourth hand case
   if (thisRoundCards.length === 3) {
     const cardToPlay = fourthHand(
       ownId,

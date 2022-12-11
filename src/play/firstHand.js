@@ -15,9 +15,11 @@ const card = require('../card.js')
 function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   const myOrginalCards = myCards.slice()
   const mySortedCards = sortCard(myCards)
+  console.log("my sorted cards",mySortedCards)
 
-  if (mySortedCards.length === 1) return mySortedCards[0]
-
+  if (mySortedCards.length === 1) {
+    return mySortedCards[0]
+}
   if (trumpSuit && trumpRevealed) {
     trumpSuitCards = getSuitCards(myCards, trumpSuit)
 
@@ -76,15 +78,26 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
    */
 
   if (trumpSuit && !trumpRevealed) {
+    console.log("Trump suit and Trump Not Revealed")
     const trumpSuitCards = getSuitCards(myCards, trumpSuit)
     const nonTrumpCards = getRemainingCards(myCards, trumpSuitCards)
-
-    while (nonTrumpCards.length === 1) {
-      let highestCard = nonTrumpCards.splice(nonTrumpCards.length - 1, 1)
-      console.log('non trump card', nonTrumpCards, highestCard)
-      if (currentWinning(nonTrumpCards, getSuit(highestCard[0]), handsHistory))
-        return last(nonTrumpCards)
+    
+    if (nonTrumpCards.length === 1) {
+      console.log("SOMETHING WAS RETURNED")
+      return last(nonTrumpCards)
     }
+
+    if (nonTrumpCards.length >= 2) {
+      while (nonTrumpCards.length === 1) {
+        let highestCard = nonTrumpCards.splice(nonTrumpCards.length - 1, 1)
+        console.log("highestCard", highestCard)
+        console.log('non trump card', nonTrumpCards, highestCard)
+
+        if (currentWinning(nonTrumpCards, getSuit(highestCard[0]), handsHistory))
+          return last(nonTrumpCards)
+      }
+    }
+    console.log("HERE nothing is returned")
   }
   //trump not revealed
   // my first highest card is current winning card

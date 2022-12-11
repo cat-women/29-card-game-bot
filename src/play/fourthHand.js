@@ -30,6 +30,7 @@ function fourthHand (
   const myCards = ownCards.slice()
 
   // const playedCards = payload.played
+  // dec10
   const playedSuit = getSuit(playedCards[0])
   const mySortedCards = sortCard(ownCards)
   const ownSuitCards = getSuitCards(ownCards, playedSuit)
@@ -115,6 +116,7 @@ function fourthHand (
       return iRevealTrump(myCards, playedCards, trumpSuit)
     return last(mySortedCards)
   }
+  
   if (winner === playersIds) return last(mySortedCards)
   return 0
 }
