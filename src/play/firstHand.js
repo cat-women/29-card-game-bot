@@ -1,16 +1,13 @@
 const {
   last,
-  secondLast,
   getSuit,
   getSuitCards,
   sortCard,
-  getFace,
   cardsNotPlayed,
   currentWinning,
   getRemainingCards
 } = require('../shared')
 
-const card = require('../card.js')
 
 function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   const myOrginalCards = myCards.slice()
@@ -21,7 +18,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
     return mySortedCards[0]
 }
   if (trumpSuit && trumpRevealed) {
-    trumpSuitCards = getSuitCards(myCards, trumpSuit)
+    const trumpSuitCards = getSuitCards(myCards, trumpSuit)
 
     // no trump suit card
     if (trumpSuitCards.length === 0) {

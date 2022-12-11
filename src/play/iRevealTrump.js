@@ -1,16 +1,4 @@
-const {
-  last,
-  secondLast,
-  getSuit,
-  getSuitCards,
-  sortCard,
-  getFace,
-  cardsNotPlayed,
-  currentWinning,
-  getRemainingCards,
-  isHigherCard
-} = require('../shared')
-
+const { last, getSuitCards, sortCard } = require('../shared')
 
 function iRevealTrump (myCards, playedCards, trumpSuit) {
   const trumpSuitCards = getSuitCards(myCards, trumpSuit)

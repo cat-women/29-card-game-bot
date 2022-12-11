@@ -1,4 +1,5 @@
-card = {}
+const card = []
+
 card['7'] = 0
 card['8'] = 0
 card['Q'] = 0

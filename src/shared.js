@@ -29,7 +29,7 @@ function sortCard (cards) {
 
 function cardsNotPlayed (cardSuit, handsHistory) {
   const cards = Deck[cardSuit]
-  console.log('cars not played ', cardSuit, cards)
+  console.log('cards not played ', cardSuit, cards)
 
   if (handsHistory.length === 0) return cards
 
@@ -40,7 +40,7 @@ function cardsNotPlayed (cardSuit, handsHistory) {
     playedCards = playedCards.concat(suitCards)
   })
 
-  const winningCard = playedCards.forEach(card => {
+ playedCards.forEach(card => {
     const index = cards.indexOf(card)
     if (index > -1) {
       cards.splice(index, 1)

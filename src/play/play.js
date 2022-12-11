@@ -1,13 +1,11 @@
 const {
   last,
-  secondLast,
   getSuit,
   getSuitCards,
   sortCard,
   getFace,
   cardsNotPlayed,
-  currentWinning,
-  getRemainingCards
+  currentWinning
 } = require('../shared')
 
 const card = require('../card.js')
@@ -286,8 +284,9 @@ function isOpponetWin (
   trumpRevealed,
   handsHistory
 ) {
-  orginalPlayedCards = playedCards.slice()
+  const orginalPlayedCards = playedCards.slice()
   const sortedCardPlayedCards = sortCard(playedCards)
+  
   if (trumpSuit) {
     const trumpSuitCards = getSuitCards(playedCards, trumpSuit)
     const partnerPos = (playedCards.length - 2 + 4) % 4

@@ -1,19 +1,14 @@
 const {
   last,
-  secondLast,
   getSuit,
   getSuitCards,
   sortCard,
-  getFace,
-  cardsNotPlayed,
-  currentWinning,
   getRemainingCards,
   isHigherCard
 } = require('../shared')
 
 const iRevealTrump = require('./iRevealTrump')
 
-const card = require('../card.js')
 
 function fourthHand (
   ownId,
@@ -35,8 +30,6 @@ function fourthHand (
   const mySortedCards = sortCard(ownCards)
   const ownSuitCards = getSuitCards(ownCards, playedSuit)
 
-  const orinalPlayedCards = playedCards.slice()
-  const sortedPlayedCards = sortCard(playedCards)
   const ownIdIndex = playersIds.indexOf(ownId)
 
   const parterIndex = (ownIdIndex - 2 + 4) % 4
@@ -116,7 +109,7 @@ function fourthHand (
       return iRevealTrump(myCards, playedCards, trumpSuit)
     return last(mySortedCards)
   }
-  
+
   if (winner === playersIds) return last(mySortedCards)
   return 0
 }

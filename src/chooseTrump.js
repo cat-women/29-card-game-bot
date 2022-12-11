@@ -1,4 +1,4 @@
-const { last, getSuit, getSuitCards } = require('./shared')
+const { getSuit } = require('./shared')
 
 /**
  * @payload
@@ -13,9 +13,8 @@ const { last, getSuit, getSuitCards } = require('./shared')
 
 function chooseTrump (payload) {
   const ownCards = payload.cards
-  const lastCard = last(ownCards)
 
-  possibleTrumpCard = {}
+  const possibleTrumpCard = {}
 
   // count
   ownCards.forEach(function (x) {
