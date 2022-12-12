@@ -42,7 +42,7 @@ function thirdHand (
   if (ownSuitCards.length > 0) {
     const sortedSuitCards = sortCard(ownSuitCards)
 
-    // ***** work here 
+    // ***** work here
     if (handsHistory.length === 0) {
       if (winner === playersIds[parterIndex]) return last(sortedSuitCards)
       return sortedSuitCards[0]
@@ -67,67 +67,51 @@ function thirdHand (
 
     // opponent is winning
     if (winner !== playersIds[parterIndex]) {
-
-      
-      // winner is trump card
-      if (trumpRevealed && getSuit(winningCard) === trumpSuit) {
-        return sortedSuitCards[0]
-      }
-
-      // opponent dont have same suit card and trump card
-      if (finalLeftCards.length === 0 && lastPlayerCardHistory !== trumpSuit) {
-        if (isHigherCard(sortedSuitCards, winningCard))
-          return last(sortedSuitCards)
-        return sortedSuitCards[0]
-      }
-
-      // there is possible that oppp have card from same suit
-      if (getSuit(lastPlayerCardHistory) === playedSuit && finalLeftCards.length !== 0) {
-        //  have winning card
-        if (currentWinning(myCards, playedSuit, handsHistory))
+      // winner is not trump card  card
+      if (trumpRevealed && getSuit(winningCard) !== trumpSuit) {
+        // third player has same suit card in last move and remaining card is not zero
+        if (
+          getSuit(lastPlayerCardHistory) === playedSuit &&
+          finalLeftCards.length !== 0
+        ) {
+          if (currentWinning(sortedSuitCards, playedSuit, handsHistory))
+            return last(sortedSuitCards)
+        }
+        // no same suit card
+        if (
+          trumpRevealed &&
+          getSuit(lastPlayerCardHistory) !== playedSuit &&
+          getSuit(lastPlayerCardHistory) !== trumpSuit
+        )
           return last(sortedSuitCards)
 
         return sortedSuitCards[0]
       }
 
-      // dont have card from same suit but have trump suit
-      if (getSuit(lastPlayerCardHistory) === trumpSuit )
-        return sortedSuitCards[0]
-
-      // no trump suit and same suit card
-      if (!isHigherCard(sortedSuitCards, winningCard)) return sortedSuitCards[0]
-
-      return last(sortedSuitCards)
+      return sortedSuitCards[0]
     }
 
     /**
      * partner is winning
      */
     // partner sure to win
+
+    if (
+      getSuit(lastPlayerCardHistory) === playedSuit &&
+      finalLeftCards.length !== 0
+    ) {
+      if (currentWinning(sortedSuitCards, playedSuit, handsHistory))
+        return last(sortedSuitCards)
+    }
+
+    // no same suit card
     if (
       trumpRevealed &&
-      getSuit(winningCard) === trumpSuit &&
-      getFace(winningCard) === 'J'
+      getSuit(lastPlayerCardHistory) !== playedSuit &&
+      getSuit(lastPlayerCardHistory) !== trumpSuit
     )
       return last(sortedSuitCards)
 
-    if (
-      trumpRevealed &&
-      getSuit(winningCard) === trumpSuit &&
-      getSuit(lastPlayerCardHistory) === trumpSuit
-    ) {
-      // winner is  the highest cards
-
-      if (currentWinning(finalLeftCards, getSuit(winningCard), handsHistory))
-        return sortedSuitCards[0]
-      return last(sortedSuitCards)
-    }
-    //  might have same suit card
-    if (trumpRevealed && trumpSuit) {
-      const trumpCardsNotPlayed = cardsNotPlayed(trumpSuit, handsHistory)
-      if (finalLeftCards.length === 0 && trumpCardsNotPlayed.length === 0)
-        return last(sortedSuitCards)
-    }
     return sortedSuitCards[0]
   }
 
@@ -137,13 +121,21 @@ function thirdHand (
       if (winner === playersIds[parterIndex]) return mySortedCards[0]
       return 0
     }
+    if (
+      trumpRevealed &&
+      winner === playersIds[parterIndex] &&
+      getFace(winningCard) === 'J'
+    ) {
+      return mySortedCards[0]
+    }
+    const myTrumpSuitCards = getSuitCards(myCards, trumpSuit)
+    const mySortedTrumpSuitCards = sortCard(myTrumpSuitCards)
+
     const lastPlayerCardHistory = whatIsLastPlayerCard(
       handsHistory,
       playedSuit,
       playersIds
     )
-    const myTrumpSuitCards = getSuitCards(myCards, trumpSuit)
-    const mySortedTrumpSuitCards = sortCard(myTrumpSuitCards)
 
     // cards not played in total
     const trumpCardsNotPlayed = cardsNotPlayed(trumpSuit, handsHistory)
@@ -158,46 +150,71 @@ function thirdHand (
       remaingTrumpCards,
       myTrumpSuitCards
     )
+    console.log('finalLeftTrumpCards', finalLeftTrumpCards)
 
+    // cards not played in total
+    const totalRemaingCards = cardsNotPlayed(playedSuit, handsHistory)
+    // card to be played
+    const remaingCards = getRemainingCards(
+      totalRemaingCards,
+      getSuitCards(playedCards, playedSuit)
+    )
+
+    // all card with oppoenent
+    const finalLeftCards = getRemainingCards(remaingCards, ownSuitCards)
+    console.log('finalLeftCards', finalLeftCards)
+
+    // opponent winning
     if (winner !== playersIds[parterIndex]) {
+      console.log('oppoent  is winngng ')
       if (myTrumpSuitCards.length === 0) return mySortedCards[0]
 
       // winning card is trump card // i have higher trump suit card
-      if (
-        getSuit(winningCard) === trumpSuit &&
-        currentWinning(myCards, trumpSuit, handsHistory)
-      )
-        return last(mySortedTrumpSuitCards)
-      // if only i have trump cards
-      if (finalLeftTrumpCards.length === 0) return mySortedTrumpSuitCards[0]
+      if (getSuit(winningCard) === trumpSuit) {
+        if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
+          return last(mySortedTrumpSuitCards)
+      }
 
-      if (
-        isHigherCard(
-          last(mySortedTrumpSuitCards),
-          last(sortCard(finalLeftTrumpCards))
+      if (lastPlayerCardHistory === playedSuit && finalLeftCards.length !== 0)
+        return mySortedTrumpSuitCards[0]
+      else {
+        if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
+          return last(mySortedTrumpSuitCards)
+      }
+      return mySortedCards[0]
+    }
+    // opponent have same suit card
+    if (
+      finalLeftCards.length > 0 &&
+      getSuit(lastPlayerCardHistory) === playedSuit
+    ) {
+      if (!isHigherCard(finalLeftCards, winningCard)) {
+        const nonTrumpCard = getRemainingCards(
+          mySortedCards,
+          mySortedTrumpSuitCards
         )
+        return last(sortCard(nonTrumpCard))
+      }
+
+      if (mySortedTrumpSuitCards.length === 0) return mySortedCards[0]
+      return mySortedTrumpSuitCards[0]
+    }
+    if (
+      getSuit(lastPlayerCardHistory) !== playedSuit &&
+      getSuit(lastPlayerCardHistory) !== trumpSuit
+    ) {
+      const nonTrumpCard = getRemainingCards(
+        mySortedCards,
+        mySortedTrumpSuitCards
       )
-        return last(mySortedTrumpSuitCards)
-
-      return mySortedCards[0]
-    }
-    // partner is winning and its trump suit
-    if (myTrumpSuitCards.length === 0 && finalLeftTrumpCards.length === 0)
-      return last(mySortedCards)
-
-    if (winningCard === trumpSuit) {
-      if (finalLeftTrumpCards.length === 0) return last(mySortedCards)
-      if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
-        return last(mySortedTrumpSuitCards)
-      return mySortedCards[0]
+      return sortCard(nonTrumpCard)[0]
     }
 
-    if (myTrumpSuitCards.length !== 0 && finalLeftTrumpCards.length !== 0) {
-      if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
-        return last(mySortedTrumpSuitCards)
-
-      return mySortedCards[0]
-    }
+    if (
+      finalLeftTrumpCards.length > 0 &&
+      isHigherCard(mySortedTrumpSuitCards, last(sortCard(finalLeftTrumpCards)))
+    )
+      return last(mySortedTrumpSuitCards)
 
     //i reveal trump case
     const wasTrumpRevealInThisRound =
@@ -209,6 +226,7 @@ function thirdHand (
 
     return mySortedCards[0]
   }
+
   if (winner === playersIds[parterIndex]) return mySortedCards[0]
   return 0
 }
@@ -223,7 +241,6 @@ function whoIsWinning (
   const orginalPlayedCards = playedCards.slice()
   const sortedPlayedCards = sortCard(playedCards)
 
-  const partnerPos = (playedCards.length - 2 + 4) % 4
   const playerIndex = playersIds.indexOf(ownId)
   let winningCard = ''
 
