@@ -9,7 +9,6 @@ const {
 
 const iRevealTrump = require('./iRevealTrump')
 
-
 function fourthHand (
   ownId,
   ownCards,
@@ -71,11 +70,10 @@ function fourthHand (
     if (winner !== playersIds[parterIndex]) {
       // winning card is trump card
       if (getSuit(winningCard) === trumpSuit) {
-        console.log('wiining card is the trump card', winningCard)
+        
         if (myTrumpSuitCards.length === 0) return mySortedCards[0]
-
-        if (isHigherCard(last(mySortedTrumpSuitCards), winningCard))
-          return mySortedTrumpSuitCards[0]
+        if (isHigherCard(mySortedTrumpSuitCards, winningCard))
+          return last(mySortedTrumpSuitCards)
       }
 
       //winning card is not trump card

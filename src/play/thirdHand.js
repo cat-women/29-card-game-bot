@@ -117,6 +117,14 @@ function thirdHand (
 
   // I dont have card from same suit
   if (trumpSuit && trumpRevealed) {
+    //i reveal trump case
+    const wasTrumpRevealInThisRound =
+      trumpRevealed.hand === handsHistory.length + 1
+    const didIRevealTheTrump = trumpRevealed.playerId === ownId
+
+    if (wasTrumpRevealInThisRound && didIRevealTheTrump)
+      return iRevealTrump(myCards, playedCards, trumpSuit)
+
     if (handsHistory.length === 0) {
       if (winner === playersIds[parterIndex]) return mySortedCards[0]
       return 0
@@ -215,14 +223,6 @@ function thirdHand (
       isHigherCard(mySortedTrumpSuitCards, last(sortCard(finalLeftTrumpCards)))
     )
       return last(mySortedTrumpSuitCards)
-
-    //i reveal trump case
-    const wasTrumpRevealInThisRound =
-      trumpRevealed.hand === handsHistory.length + 1
-    const didIRevealTheTrump = trumpRevealed.playerId === ownId
-
-    if (wasTrumpRevealInThisRound && didIRevealTheTrump)
-      return iRevealTrump(myCards, playedCards, trumpSuit)
 
     return mySortedCards[0]
   }

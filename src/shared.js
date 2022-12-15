@@ -29,7 +29,6 @@ function sortCard (cards) {
 
 function cardsNotPlayed (cardSuit, handsHistory) {
   const cards = Deck[cardSuit]
-  console.log('cards not played ', cardSuit, cards)
 
   if (handsHistory.length === 0) return cards
 
@@ -77,6 +76,8 @@ function isHigherCard (myCard, opponentCard) {
   if (card[getFace(last(myCard))] > card[getFace(opponentCard)]) return true
   return false
 }
+
+
 
 module.exports = {
   last,

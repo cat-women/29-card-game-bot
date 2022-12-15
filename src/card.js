@@ -15,4 +15,11 @@ const Deck = {
   H: ['JH', '9H', '1H', 'TH', 'KH', 'QH', '8H', '7H'],
   S: ['JS', '9S', '1S', 'TS', 'KS', 'QS', '8S', '7S']
 }
-module.exports = {card,Deck}
+
+const playersCardHistory = {
+  you0: {},
+  opp0: {},
+  you1: {},
+  opp1: {}
+} 
+module.exports = { card, Deck }
