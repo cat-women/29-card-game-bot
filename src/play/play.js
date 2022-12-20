@@ -7,11 +7,11 @@ const {
   cardsNotPlayed,
   currentWinning
 } = require('../shared')
-
 const card = require('../card.js')
 const firstHand = require('./firstHand')
-const fourthHand = require('./fourthHand')
+const secondHand = require('./secondHand')
 const thirdHand = require('./thirdHand')
+const fourthHand = require('./fourthHand')
 
 function play (payload) {
   const ownCards = payload.cards
@@ -22,10 +22,11 @@ function play (payload) {
   const ownId = payload.playerId
   const playersIds = payload.playerIds
 
-// if(ownCards.length === 1){
-//   console.log("playersid",playersIds)
-//   console.log(handsHistory)
-// }
+  if (ownCards.length === 1) {
+    return {
+      card: ownCards[0]
+    }
+  }
   // first move of game
   if (handsHistory.length === 0 && thisRoundCards.length === 0) {
     const myCards = sortCard(ownCards)
@@ -37,6 +38,7 @@ function play (payload) {
       card: myCards[0]
     }
   }
+
   // first hand case
   if (thisRoundCards.length === 0) {
     return {
@@ -44,6 +46,22 @@ function play (payload) {
     }
   }
 
+  // second hand case
+  if (thisRoundCards.length === 1) {
+    const cardToPlay = secondHand(
+      ownId,
+      ownCards,
+      thisRoundCards,
+      trumpSuit,
+      trumpRevealed,
+      handsHistory,
+      playersIds
+    )
+    if (cardToPlay !== 0)
+      return {
+        card: cardToPlay
+      }
+  }
 
   // third hand case
   if (thisRoundCards.length === 2) {
@@ -286,7 +304,7 @@ function isOpponetWin (
 ) {
   const orginalPlayedCards = playedCards.slice()
   const sortedCardPlayedCards = sortCard(playedCards)
-  
+
   if (trumpSuit) {
     const trumpSuitCards = getSuitCards(playedCards, trumpSuit)
     const partnerPos = (playedCards.length - 2 + 4) % 4

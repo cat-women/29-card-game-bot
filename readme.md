@@ -48,3 +48,14 @@ sudo docker stop <id>
     },
   }
  */
+
+
+ [
+  [ 'You-0', [ 'JD', '7D', 'QD', 'KD' ], 'You-0' ],
+  [ 'You-0', [ 'JH', '9H', '8H', '7H' ], 'You-0' ],
+  [ 'You-0', [ '7S', 'QS', 'KS', 'JS' ], 'Opponent-1' ],
+  [ 'Opponent-1', [ 'TH', 'QH', 'QC', '1H' ], 'You-1' ],
+  [ 'You-1', [ 'JC', '9S', 'KC', '9C' ], 'Opponent-1' ],
+  [ 'Opponent-1', [ '1S', '8S', '7C', 'TS' ], 'Opponent-1' ],
+  [ 'Opponent-1', [ 'KH', '1D', '1C', '8C' ], 'Opponent-1' ]
+]

@@ -1,6 +1,7 @@
 const {
   last,
   getSuit,
+  getFace,
   getSuitCards,
   sortCard,
   cardsNotPlayed,
@@ -8,15 +9,14 @@ const {
   getRemainingCards
 } = require('../shared')
 
-
 function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   const myOrginalCards = myCards.slice()
   const mySortedCards = sortCard(myCards)
-  console.log("my sorted cards",mySortedCards)
+  console.log('my sorted cards', mySortedCards)
 
   if (mySortedCards.length === 1) {
     return mySortedCards[0]
-}
+  }
   if (trumpSuit && trumpRevealed) {
     const trumpSuitCards = getSuitCards(myCards, trumpSuit)
 
@@ -75,48 +75,36 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
    */
 
   if (trumpSuit && !trumpRevealed) {
-    console.log("Trump suit and Trump Not Revealed")
     const trumpSuitCards = getSuitCards(myCards, trumpSuit)
     const nonTrumpCards = getRemainingCards(myCards, trumpSuitCards)
-    
+
     if (nonTrumpCards.length === 1) {
-      console.log("SOMETHING WAS RETURNED")
       return last(nonTrumpCards)
     }
-
     if (nonTrumpCards.length >= 2) {
-      while (nonTrumpCards.length === 1) {
+      while (nonTrumpCards.length > 1) {
         let highestCard = nonTrumpCards.splice(nonTrumpCards.length - 1, 1)
-        console.log("highestCard", highestCard)
-        console.log('non trump card', nonTrumpCards, highestCard)
-
-        if (currentWinning(nonTrumpCards, getSuit(highestCard[0]), handsHistory))
+        if (currentWinning(nonTrumpCards, getSuit(last(highestCard)), handsHistory)        )
           return last(nonTrumpCards)
       }
-    }
-    console.log("HERE nothing is returned")
+    }    
   }
+  
   //trump not revealed
   // my first highest card is current winning card
 
   const myHighestValueCardSuit = getSuit(last(mySortedCards))
-  if (currentWinning(mySortedCards, myHighestValueCardSuit, handsHistory))
+  if (currentWinning(mySortedCards, getSuit(last(mySortedCards)), handsHistory))
     return last(mySortedCards)
 
   // check for second winning card
   const mySortedCardsOriginal = mySortedCards.slice()
-  if (mySortedCards.length > 0) {
+  if (mySortedCards.length > 1) {
     mySortedCards.splice(myCards.length - 1, 1)
     if (currentWinning(mySortedCards, myHighestValueCardSuit, handsHistory))
       return last(mySortedCards)
   }
-
-  // check for third winngin card'
-  if (myOrginalCards.length > 0) {
-    mySortedCards.splice(myCards.length - 1, 1)
-    if (currentWinning(mySortedCards, myHighestValueCardSuit, handsHistory))
-      return last(mySortedCards)
-  }
+  
   return mySortedCardsOriginal[0]
 }
 

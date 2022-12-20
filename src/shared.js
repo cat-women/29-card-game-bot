@@ -50,6 +50,7 @@ function cardsNotPlayed (cardSuit, handsHistory) {
 }
 
 function currentWinning (myCards, cardSuit, handsHistory) {
+
   const remainingCards = cardsNotPlayed(cardSuit, handsHistory)
   if (remainingCards.length === 0) return true
 
