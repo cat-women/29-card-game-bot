@@ -9,6 +9,7 @@ const {
   getRemainingCards
 } = require('../shared')
 
+
 function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   const myOrginalCards = myCards.slice()
   const mySortedCards = sortCard(myCards)
@@ -95,12 +96,14 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
 
   const myHighestValueCardSuit = getSuit(last(mySortedCards))
   if (currentWinning(mySortedCards, getSuit(last(mySortedCards)), handsHistory))
-    return last(mySortedCards)
+  return last(mySortedCards)
 
   // check for second winning card
   const mySortedCardsOriginal = mySortedCards.slice()
-  if (mySortedCards.length > 1) {
+  while (mySortedCards.length > 1) {
+
     mySortedCards.splice(myCards.length - 1, 1)
+    console.log(mySortedCards)
     if (currentWinning(mySortedCards, myHighestValueCardSuit, handsHistory))
       return last(mySortedCards)
   }

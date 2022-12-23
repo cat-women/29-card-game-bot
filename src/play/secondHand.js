@@ -57,15 +57,17 @@ function secondHand (
     playedCards,
     handsHistory
   )
-  console.log('finalLeftCards', finalLeftCards)
+  console.log('second hand finalLeftCards', finalLeftCards)
 
   // i have same suit card
   if (ownSuitCards.length > 0) {
     const sortedSuitCards = sortCard(ownSuitCards)
 
-    // no winning card
-    if (!isHigherCard(sortedSuitCards, playedSuit)) return sortedSuitCards[0]
-
+    // no winning card 
+    if (!isHigherCard(sortedSuitCards, playedCards[0])) {
+      console.log("sorted cards" ,sortedSuitCards)
+      return sortedSuitCards[0]
+}
     const { partnerPrevCard, oppPrevCard } = remainingPlayerHistory(
       ownId,
       playersIds,

@@ -18,13 +18,8 @@ function fourthHand (
   handsHistory,
   playersIds
 ) {
-  // const ownId = payload.playerId
-  // const ownCards = payload.cards
-
   const myCards = ownCards.slice()
 
-  // const playedCards = payload.played
-  // dec10
   const playedSuit = getSuit(playedCards[0])
   const mySortedCards = sortCard(ownCards)
   const ownSuitCards = getSuitCards(ownCards, playedSuit)
@@ -33,11 +28,11 @@ function fourthHand (
 
   const parterIndex = (ownIdIndex - 2 + 4) % 4
 
-  // const trumpSuit = payload.trumpSuit
-  // const trumpRevealed = payload.trumpRevealed
-
-  // const handsHistory = payload.handsHistory
-  // const playersIds = payload.playerIds
+  let nonTrumpCards = ''
+  if (trumpSuit) {
+    const trumpSuitCards = getSuitCards(ownCards, trumpSuit)
+    nonTrumpCards = getRemainingCards(ownCards, trumpSuitCards)
+  }
 
   const [winningCard, winner] = whoIsWinning(
     ownId,
@@ -51,52 +46,41 @@ function fourthHand (
   if (ownSuitCards.length > 0) {
     const sortedSuitCards = sortCard(ownSuitCards)
     // opponent is winning
-    if (winner !== playersIds[parterIndex]) {
+    if (winner !== parterIndex) {
       if (trumpRevealed && getSuit(winningCard) === trumpSuit) {
         return sortedSuitCards[0]
       }
 
-      if (!isHigherCard(last(sortedSuitCards), winningCard)) {
+      if (!isHigherCard(sortedSuitCards, winningCard)) {
         return sortedSuitCards[0]
       }
+      return last(sortedSuitCards)
     }
-    return last(sortedSuitCards)
+
+    return sortedSuitCards[0]
   }
 
   // I dont have card from same suit
   if (trumpSuit && trumpRevealed) {
+    console.log("snfdsfd")
     const myTrumpSuitCards = getSuitCards(myCards, trumpSuit)
     const mySortedTrumpSuitCards = sortCard(myTrumpSuitCards)
-    if (winner !== playersIds[parterIndex]) {
-      // winning card is trump card
-      if (getSuit(winningCard) === trumpSuit) {
-        
-        if (myTrumpSuitCards.length === 0) return mySortedCards[0]
-        if (isHigherCard(mySortedTrumpSuitCards, winningCard))
-          return last(mySortedTrumpSuitCards)
+
+    if (myTrumpSuitCards.length > 0) {
+      // opponent is winning
+      if (winner !== playersIds[parterIndex]) {
+        // winning card is trump card
+        if (getSuit(winningCard) === trumpSuit) {
+          if (isHigherCard(mySortedTrumpSuitCards, winningCard))
+            return last(mySortedTrumpSuitCards)
+          else 
+          return sortCard(nonTrumpCards)[0]
+        }
+        if (getSuit(winningCard) !== trumpSuit) return mySortedTrumpSuitCards[0]
       }
-
-      //winning card is not trump card
-      /**
-       * i have trump card
-       */
-      if (myTrumpSuitCards.length !== 0) return mySortedTrumpSuitCards[0]
-
-      //trump card not played but i have lower value card
-      if (isHigherCard(last(mySortedCards), winningCard))
-        return last(mySortedCards)
-      return mySortedCards[0]
+      if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
     }
-
-    /**
-     * my partner is the winner
-     * and he throw
-     *
-     */
-    if (winningCard === trumpSuit) {
-      const nonTrumpCards = getRemainingCards(myCards, myTrumpSuitCards)
-      return last(sortCard(nonTrumpCards))
-    }
+    if (winner === playersIds[parterIndex]) return last(mySortedCards)
 
     //i reveal trump case
     const wasTrumpRevealInThisRound =
@@ -105,10 +89,14 @@ function fourthHand (
 
     if (wasTrumpRevealInThisRound && didIRevealTheTrump)
       return iRevealTrump(myCards, playedCards, trumpSuit)
-    return last(mySortedCards)
+    return mySortedCards[0]
   }
-
-  if (winner === playersIds) return last(mySortedCards)
+  // if parner is winning dont reveal trump
+  if (winner === parterIndex) {
+    if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
+    else last(mySortedCards)
+  }
+  
   return 0
 }
 
@@ -120,7 +108,8 @@ function whoIsWinning (
   trumpRevealed
 ) {
   const orginalPlayedCards = playedCards.slice()
-  const sortedPlayedCards = sortCard(playedCards)
+  const playedSuitCards = getSuitCards(playedCards, getSuit(playedCards[0]))
+  const sortedPlayedCards = sortCard(playedSuitCards)
 
   const partnerPos = (playedCards.length - 2 + 4) % 4
   const playerIndex = playersIds.indexOf(ownId)
@@ -129,7 +118,7 @@ function whoIsWinning (
   if (trumpSuit && trumpRevealed) {
     const trumpSuitCards = getSuitCards(playedCards, trumpSuit)
 
-    // trump card not played
+    // trump card played
     if (trumpSuitCards.length > 0) {
       const sortedTrumpSuitCards = sortCard(trumpSuitCards)
       winningCard = last(sortedTrumpSuitCards)
@@ -142,7 +131,7 @@ function whoIsWinning (
 
   console.log('winnign card', winningCard, 'players', playersIds[winnerIndex])
 
-  return [winningCard, playersIds[winnerIndex]]
+  return [winningCard, winnerIndex]
 }
 
 module.exports = fourthHand

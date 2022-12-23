@@ -23,6 +23,7 @@ function play (payload) {
   const playersIds = payload.playerIds
 
   if (ownCards.length === 1) {
+    console.log("handsHistory",payload)
     return {
       card: ownCards[0]
     }

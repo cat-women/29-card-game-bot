@@ -18,7 +18,7 @@ function iRevealTrump (myCards, playedCards, trumpSuit) {
   const playedTrumpcards = getSuitCards(playedCards, trumpSuit)
   // console.log("sortedTrumpSuitCards",sortedTrumpSuitCards)
   // console.log("trumpSuit",trumpSuit)
-
+console.log("i reveal trum ")
   if (trumpSuitCards.length === 0) return mySortedCards[0]
 
   if (playedCards.length === 3 && playedTrumpcards.length === 0)

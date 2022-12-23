@@ -33,6 +33,7 @@ function cardsNotPlayed (cardSuit, handsHistory) {
   if (handsHistory.length === 0) return cards
 
   let playedCards = []
+  
   handsHistory.forEach(handsHistory => {
     // get only from that partcuar suit
     let suitCards = getSuitCards(handsHistory[1], cardSuit)
@@ -74,6 +75,7 @@ function getRemainingCards (allCards, myCards) {
 }
 
 function isHigherCard (myCard, opponentCard) {
+  console.log(card[getFace(last(myCard))] ,card[getFace(opponentCard)])
   if (card[getFace(last(myCard))] > card[getFace(opponentCard)]) return true
   return false
 }

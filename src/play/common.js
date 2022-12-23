@@ -134,5 +134,6 @@ module.exports = {
   getSecondPlayerCard,
   getThirdPlayerCard,
   getFirstPlayerIndex,
-  getFinalRemainingCards
+  getFinalRemainingCards,
+  setPlayedCards
 }

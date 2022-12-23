@@ -11,6 +11,7 @@ const {
 } = require('../shared')
 
 const iRevealTrump = require('./iRevealTrump')
+const { setPlayedCards } = require('./common')
 
 function thirdHand (
   ownId,
@@ -36,7 +37,16 @@ function thirdHand (
     trumpSuit,
     trumpRevealed
   )
-  console.log('winning card', winningCard, 'winner ', winner)
+  console.log('in third hand winning card', winningCard, 'winner ', winner)
+
+  let lastPlayerCard = ''
+  if (handsHistory.length > 0)
+    lastPlayerCard = thirdPlayerHistory(
+      ownId,
+      playersIds,
+      playedSuit,
+      handsHistory
+    )
 
   // i have same suit card
   if (ownSuitCards.length > 0) {
@@ -48,11 +58,6 @@ function thirdHand (
       return sortedSuitCards[0]
     }
 
-    const lastPlayerCardHistory = whatIsLastPlayerCard(
-      handsHistory,
-      playedSuit,
-      playersIds
-    )
     // cards not played in total
     const totalRemaingCards = cardsNotPlayed(playedSuit, handsHistory)
     // card to be played
@@ -71,8 +76,8 @@ function thirdHand (
       if (trumpRevealed && getSuit(winningCard) !== trumpSuit) {
         // third player has same suit card in last move and remaining card is not zero
         if (
-          getSuit(lastPlayerCardHistory) === playedSuit &&
-          finalLeftCards.length !== 0
+          getSuit(lastPlayerCard) === playedSuit &&
+          finalLeftCards.length > 0
         ) {
           if (currentWinning(sortedSuitCards, playedSuit, handsHistory))
             return last(sortedSuitCards)
@@ -80,8 +85,8 @@ function thirdHand (
         // no same suit card
         if (
           trumpRevealed &&
-          getSuit(lastPlayerCardHistory) !== playedSuit &&
-          getSuit(lastPlayerCardHistory) !== trumpSuit
+          getSuit(lastPlayerCard) !== playedSuit &&
+          getSuit(lastPlayerCard) !== trumpSuit
         )
           return last(sortedSuitCards)
 
@@ -96,10 +101,7 @@ function thirdHand (
      */
     // partner sure to win
 
-    if (
-      getSuit(lastPlayerCardHistory) === playedSuit &&
-      finalLeftCards.length !== 0
-    ) {
+    if (getSuit(lastPlayerCard) === playedSuit && finalLeftCards.length > 0) {
       if (currentWinning(sortedSuitCards, playedSuit, handsHistory))
         return last(sortedSuitCards)
     }
@@ -107,8 +109,8 @@ function thirdHand (
     // no same suit card
     if (
       trumpRevealed &&
-      getSuit(lastPlayerCardHistory) !== playedSuit &&
-      getSuit(lastPlayerCardHistory) !== trumpSuit
+      getSuit(lastPlayerCard) !== playedSuit &&
+      getSuit(lastPlayerCard) !== trumpSuit
     )
       return last(sortedSuitCards)
 
@@ -129,36 +131,17 @@ function thirdHand (
       if (winner === playersIds[parterIndex]) return mySortedCards[0]
       return 0
     }
-    if (
-      trumpRevealed &&
-      winner === playersIds[parterIndex] &&
-      getFace(winningCard) === 'J'
-    ) {
-      return mySortedCards[0]
-    }
+    // if partner thor jack throw zero card  ********** not sure here
+    // if (
+    //   trumpRevealed &&
+    //   winner === playersIds[parterIndex] &&
+    //   getFace(winningCard) === 'J'
+    // ) {
+    //   return mySortedCards[0]
+    // }
+
     const myTrumpSuitCards = getSuitCards(myCards, trumpSuit)
     const mySortedTrumpSuitCards = sortCard(myTrumpSuitCards)
-
-    const lastPlayerCardHistory = whatIsLastPlayerCard(
-      handsHistory,
-      playedSuit,
-      playersIds
-    )
-
-    // cards not played in total
-    const trumpCardsNotPlayed = cardsNotPlayed(trumpSuit, handsHistory)
-    // card to be played
-    const remaingTrumpCards = getRemainingCards(
-      trumpCardsNotPlayed,
-      getSuitCards(playedCards, trumpSuit)
-    )
-
-    // all card with oppoenent
-    const finalLeftTrumpCards = getRemainingCards(
-      remaingTrumpCards,
-      myTrumpSuitCards
-    )
-    console.log('finalLeftTrumpCards', finalLeftTrumpCards)
 
     // cards not played in total
     const totalRemaingCards = cardsNotPlayed(playedSuit, handsHistory)
@@ -173,60 +156,74 @@ function thirdHand (
     console.log('finalLeftCards', finalLeftCards)
 
     // opponent winning
-    if (winner !== playersIds[parterIndex]) {
-      console.log('oppoent  is winngng ')
-      if (myTrumpSuitCards.length === 0) return mySortedCards[0]
+    if (myTrumpSuitCards.length > 0) {
+      // cards not played in total
+      const trumpCardsNotPlayed = cardsNotPlayed(trumpSuit, handsHistory)
+      // card to be played
+      const remaingTrumpCards = getRemainingCards(
+        trumpCardsNotPlayed,
+        getSuitCards(playedCards, trumpSuit)
+      )
 
-      // winning card is trump card // i have higher trump suit card
-      if (getSuit(winningCard) === trumpSuit) {
-        if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
-          return last(mySortedTrumpSuitCards)
+      // all card with oppoenent
+      const finalLeftTrumpCards = getRemainingCards(
+        remaingTrumpCards,
+        myTrumpSuitCards
+      )
+
+      console.log('finalLeftTrumpCards', finalLeftTrumpCards)
+
+      // opponent is winning
+      if (winner !== playersIds[parterIndex]) {
+        // winning card is trump card // i have higher trump suit card
+
+        if (getSuit(winningCard) === trumpSuit) {
+          if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
+            return last(mySortedTrumpSuitCards)
+        }
+
+        if (getSuit(lastPlayerCard) === playedSuit && finalLeftCards.length > 0)
+          return mySortedTrumpSuitCards[0]
+        else {
+          if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
+            return last(mySortedTrumpSuitCards)
+        }
+        return mySortedCards[0]
+      }
+      // partner winning
+
+      // last have same suit card
+      if (finalLeftCards.length > 0 && getSuit(lastPlayerCard) === playedSuit) {
+        // partner card is  winning
+        if (!isHigherCard(finalLeftCards, winningCard)) {
+          const nonTrumpCards = getRemainingCards(
+            mySortedCards,
+            mySortedTrumpSuitCards
+          )
+
+          if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
+          return mySortedCards[0]
+        }
+        return last(mySortedTrumpSuitCards)
       }
 
-      if (lastPlayerCardHistory === playedSuit && finalLeftCards.length !== 0)
-        return mySortedTrumpSuitCards[0]
-      else {
-        if (currentWinning(mySortedTrumpSuitCards, trumpSuit, handsHistory))
-          return last(mySortedTrumpSuitCards)
-      }
-      return mySortedCards[0]
-    }
-    // opponent have same suit card
-    if (
-      finalLeftCards.length > 0 &&
-      getSuit(lastPlayerCardHistory) === playedSuit
-    ) {
-      if (!isHigherCard(finalLeftCards, winningCard)) {
-        const nonTrumpCard = getRemainingCards(
+      if (
+        getSuit(lastPlayerCard) !== playedSuit &&
+        getSuit(lastPlayerCard) !== trumpSuit
+      ) {
+        const nonTrumpCards = getRemainingCards(
           mySortedCards,
           mySortedTrumpSuitCards
         )
-        return last(sortCard(nonTrumpCard))
+        if (nonTrumpCards.length > 0) return sortCard(nonTrumpCards)[0]
       }
 
-      if (mySortedTrumpSuitCards.length === 0) return mySortedCards[0]
-      return mySortedTrumpSuitCards[0]
-    }
-    if (
-      getSuit(lastPlayerCardHistory) !== playedSuit &&
-      getSuit(lastPlayerCardHistory) !== trumpSuit
-    ) {
-      const nonTrumpCard = getRemainingCards(
-        mySortedCards,
-        mySortedTrumpSuitCards
-      )
-      return sortCard(nonTrumpCard)[0]
-    }
-
-    if (
-      finalLeftTrumpCards.length > 0 &&
       isHigherCard(mySortedTrumpSuitCards, last(sortCard(finalLeftTrumpCards)))
-    )
       return last(mySortedTrumpSuitCards)
 
-    return mySortedCards[0]
+      return mySortedCards[0]
+    }
   }
-
   if (winner === playersIds[parterIndex]) return mySortedCards[0]
   return 0
 }
@@ -260,17 +257,35 @@ function whoIsWinning (
 
   console.log('winnign card', winningCard, 'players', playersIds[winnerIndex])
 
-  return [winningCard, playersIds[winnerIndex]]
+  return [winningCard, winnerIndex]
 }
 
+function thirdPlayerHistory (ownId, playersIds, playedSuit, handsHistory) {
+  const playersCards = setPlayedCards(playersIds, handsHistory)
+  console.log(playersCards)
+  const ownIdIndex = playersIds.indexOf(ownId)
+  let lastPlayerIndex = (ownIdIndex + 1 + 4) % 4
+
+  let lastPlayerCard = ''
+
+  for (let i = 0; i < playersCards.get('firstCard').length; i++) {
+    if (playersCards.get('firstCard')[i][1] === playedSuit) {
+      lastPlayerCard = playersCards.get(playersIds[lastPlayerIndex])[i]
+    }
+  }
+
+  console.log('third hand : last players card', lastPlayerCard)
+  return lastPlayerCard
+}
+// changes this function
 function whatIsLastPlayerCard (handsHistory, cardSuit, playersIds) {
   const history = handsHistory.filter(hand => getSuit(hand[1][0]) === cardSuit)
 
   if (history.length === 0) return 0
   const lastMove = history[history.length - 1]
-  console.log(lastMove)
   const cards = lastMove[1]
-  console.log(lastMove, lastMove[0])
+
+  console.log('third hand case ', lastMove, lastMove[0])
 
   const firstPlayerIndex = getFirstPlayerIndex(playersIds, lastMove)
   const lastPlayerIndex = (firstPlayerIndex + 1) % 4
@@ -279,22 +294,8 @@ function whatIsLastPlayerCard (handsHistory, cardSuit, playersIds) {
 }
 
 function getFirstPlayerIndex (playersIds, history) {
-  const firstPlayerIndex = playersIds.indexOf(history[1])
+  const firstPlayerIndex = playersIds.indexOf(history[0])
   return firstPlayerIndex
 }
 
 module.exports = thirdHand
-
-//  * if (ownIdIndex === 0) {
-//     if (firstPlayerIndex === 0) lastPlayerCard = cards[cards.length - 3]
-//     if (firstPlayerIndex === 2) lastPlayerCard = cards[cards.length - 1]
-//     if (firstPlayerIndex === 3) lastPlayerCard = cards[cards.length - 2]
-//   }
-//   if (ownIdIndex === 1) {
-//     if (firstPlayer === 2) lastPlayerCard = cards[cards.length - 3]
-//     if (firstPlayer === 0) lastPlayerCard = cards[cards.length - 1]
-//     if (firstPlayer === 1) lastPlayerCard = cards[cards.length - 2]
-//   }
-
-//   if (getSuit(lastPlayerCard) === cardSuit) return lastPlayerCard
-// }
