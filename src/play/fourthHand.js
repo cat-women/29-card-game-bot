@@ -41,6 +41,7 @@ function fourthHand (
     trumpSuit,
     trumpRevealed
   )
+  
 
   // i have same suit card
   if (ownSuitCards.length > 0) {
@@ -62,25 +63,9 @@ function fourthHand (
 
   // I dont have card from same suit
   if (trumpSuit && trumpRevealed) {
-    console.log("snfdsfd")
+    
     const myTrumpSuitCards = getSuitCards(myCards, trumpSuit)
     const mySortedTrumpSuitCards = sortCard(myTrumpSuitCards)
-
-    if (myTrumpSuitCards.length > 0) {
-      // opponent is winning
-      if (winner !== playersIds[parterIndex]) {
-        // winning card is trump card
-        if (getSuit(winningCard) === trumpSuit) {
-          if (isHigherCard(mySortedTrumpSuitCards, winningCard))
-            return last(mySortedTrumpSuitCards)
-          else 
-          return sortCard(nonTrumpCards)[0]
-        }
-        if (getSuit(winningCard) !== trumpSuit) return mySortedTrumpSuitCards[0]
-      }
-      if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
-    }
-    if (winner === playersIds[parterIndex]) return last(mySortedCards)
 
     //i reveal trump case
     const wasTrumpRevealInThisRound =
@@ -89,14 +74,29 @@ function fourthHand (
 
     if (wasTrumpRevealInThisRound && didIRevealTheTrump)
       return iRevealTrump(myCards, playedCards, trumpSuit)
+
+    if (myTrumpSuitCards.length > 0) {
+      // opponent is winning
+      if (winner !== playersIds[parterIndex]) {
+        // winning card is trump card
+        if (getSuit(winningCard) === trumpSuit) {
+          if (isHigherCard(mySortedTrumpSuitCards, winningCard))
+            return last(mySortedTrumpSuitCards)
+          else return sortCard(nonTrumpCards)[0]
+        }
+        if (getSuit(winningCard) !== trumpSuit) return mySortedTrumpSuitCards[0]
+      }
+      if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
+    }
+    if (winner === playersIds[parterIndex]) return last(mySortedCards)
     return mySortedCards[0]
   }
   // if parner is winning dont reveal trump
   if (winner === parterIndex) {
     if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
-    else last(mySortedCards)
+    else return last(mySortedCards)
   }
-  
+
   return 0
 }
 

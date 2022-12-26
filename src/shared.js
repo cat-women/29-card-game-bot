@@ -75,11 +75,9 @@ function getRemainingCards (allCards, myCards) {
 }
 
 function isHigherCard (myCard, opponentCard) {
-  console.log(card[getFace(last(myCard))] ,card[getFace(opponentCard)])
-  if (card[getFace(last(myCard))] > card[getFace(opponentCard)]) return true
+  if (card[getFace(last(sortCard( myCard)))] > card[getFace(opponentCard)]) return true
   return false
 }
-
 
 
 module.exports = {

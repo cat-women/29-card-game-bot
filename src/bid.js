@@ -39,6 +39,9 @@ function bid (payload) {
 
   const highestBid = getHighestBid(bidHistory)
   const ownIndex = playerIds.indexOf(playerId)
+  console.log("hihgestbid ",highestBid)
+  console.log("mycard value ",myCardValue)
+
   
   if (highestBid.value === 0) {
     if (myCardValue > MIN_BID)
@@ -62,17 +65,18 @@ function bid (payload) {
   }
 
   // if I'm biddding highest
-  if (myCardValue >= 18 && highestBid.value <= 19 )
-    return {
-      bid: highestBid.value + 1
-    }
+  // if (myCardValue >= 18 && highestBid.value <= 19 )
+  //   return {
+  //     bid: highestBid.value + 1
+  //   }
 
   // if i have better cards
-  if (myCardValue > highestBid.value && highestBid.value <= 19)
+  if (myCardValue > highestBid.value && highestBid.value <= 19){
     return {
       bid: highestBid.value + 1
     }
-
+  }
+  
   return {
     bid: PASS_BID
   }

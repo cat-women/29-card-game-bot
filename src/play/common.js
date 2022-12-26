@@ -13,7 +13,7 @@ const {
 
 function remainingPlayerHistory (ownId, playersIds, playedSuit, handsHistory) {
   const playersCards = setPlayedCards(playersIds, handsHistory)
-  console.log(playersCards)
+
   for (let i = 0; i < playersCards.get('firstCard').length; i++) {
     if (playersCards.get('firstCard')[i][1] === playedSuit) {
       const fistPlayerIndex = playersIds.indexOf(
@@ -26,7 +26,6 @@ function remainingPlayerHistory (ownId, playersIds, playedSuit, handsHistory) {
       const thirdPlayer = playersIds[(fistPlayerIndex + 2) % 4]
       const thirdCard = playersCards.get(thirdPlayer)[i]
 
-      console.log(secondCard, thirdCard)
       return { partnerPrevCard: thirdCard, oppPrevCard: secondCard }
     }
   }
@@ -83,21 +82,28 @@ function getFirstPlayerIndex (playersIds, history) {
 }
 
 function getFinalRemainingCards (cardSuit, myCards, playedCards, handsHistory) {
-  const suitCards = getSuitCards(myCards, cardSuit)
+  const totalRemaingCards = cardsNotPlayed(cardSuit, handsHistory)
 
-  // cards not played in total
+  let suitCards = getSuitCards(playedCards, cardSuit)
 
-  const leftCards = cardsNotPlayed(cardSuit, handsHistory)
+  let leftCards = ''
 
-  // cards in this rounds
-  const remaingCards = getRemainingCards(
-    leftCards,
-    getSuitCards(playedCards, cardSuit)
-  )
+  let opponentsCards = ''
+  if (suitCards.length != 0)
+    leftCards = getRemainingCards(totalRemaingCards, suitCards)
+
+  if (leftCards.length === 0) {
+    opponentsCards = getRemainingCards(totalRemaingCards, myCards)
+    return opponentsCards
+  }
+
+  // all cards left - cards in played
+
+  const finalLeftCards = getRemainingCards(totalRemaingCards, leftCards)
 
   // all card with oppoenent
-  const finalLeftCards = getRemainingCards(remaingCards, suitCards)
-  return finalLeftCards
+  opponentsCards = getRemainingCards(finalLeftCards, myCards)
+  return opponentsCards
 }
 
 function setPlayedCards (playersIds, history) {
@@ -110,7 +116,6 @@ function setPlayedCards (playersIds, history) {
   playersCards.set('firstPlayer', [])
   playersCards.set('firstCard', [])
 
-  
   history.map(item => {
     const first = item[0]
     const firstIndex = playersIds.indexOf(first)
@@ -128,6 +133,7 @@ function setPlayedCards (playersIds, history) {
 
   return playersCards
 }
+
 
 module.exports = {
   remainingPlayerHistory,
