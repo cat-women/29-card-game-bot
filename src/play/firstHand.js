@@ -9,7 +9,10 @@ const {
   getRemainingCards,
   isHigherCard
 } = require('../shared')
-
+/**
+ * need to do a lot of works 
+ * 
+ */
 function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   const mySortedCards = sortCard(myCards)
 
@@ -23,7 +26,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   if (trumpSuit) {
     // check if other highesr card is played or not
     var myfirstCard = last(mySortedCards)
-    if (getFace(myfirstCard) === 'J' && getSuit(myfirstCard)) {
+    if (getFace(myfirstCard) === 'J' && getSuit(myfirstCard) === trumpSuit) {
       return myfirstCard
     }
     trumpSuitCards = getSuitCards(myCards, trumpSuit)
@@ -49,9 +52,9 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
             getSuit(highestCard),
             handsHistory
           )
-          if(suitCardNotPlayed.length === 0) return highestCard
+          if (suitCardNotPlayed.length === 0) return highestCard
 
-           let finalLeftCards = getRemainingCards(
+          let finalLeftCards = getRemainingCards(
             suitCardNotPlayed,
             mySortedCards
           )
@@ -74,7 +77,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
     const sortedTrumpSuitCards = sortCard(trumpSuitCards)
 
     var finaLeftTrumpCards = getRemainingCards(trumpRemaining, trumpSuitCards)
-
+    console.log('finaLeftTrumpCards', finaLeftTrumpCards, sortedTrumpSuitCards)
     /**
      * there is still trump card
      * check if i have winnign trump card
@@ -82,7 +85,6 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
 
     if (finaLeftTrumpCards.length > 0) {
       if (!isHigherCard(finaLeftTrumpCards, last(sortedTrumpSuitCards))) {
-        console.log('I have currnt winning trump card')
         return last(sortedTrumpSuitCards)
       } else return mySortedCards[0]
     }
@@ -105,11 +107,11 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
           handsHistory
         )
 
-        if(notPlayedCards.length === 0) return highestValueCards
-        
         let highestSuitCards = getSuitCards(myCards, getSuit(highestValueCards))
-
+        // all not played cards - mycards
         let finalLeftCards = getRemainingCards(notPlayedCards, highestSuitCards)
+
+        if (finalLeftCards.length === 0) return highestValueCards
 
         highestValueCards = sNonTrump.splice(sNonTrump.length - 1, 1)
 
@@ -132,6 +134,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
   const mySortedCardsOriginal = mySortedCards.slice()
 
   while (mySortedCards.length > 1) {
+    
     let highestValueCards = last(mySortedCards)
 
     let notPlayedCards = cardsNotPlayed(
@@ -142,11 +145,11 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory) {
     let highestSuitCards = getSuitCards(myCards, getSuit(highestValueCards))
 
     let finalLeftCards = getRemainingCards(notPlayedCards, highestSuitCards)
+    console.log("finalLeftCards",finalLeftCards)
     //if no other card left
     if (finalLeftCards.length === 0) return highestValueCards
 
     highestValueCards = mySortedCards.splice(myCards.length - 1, 1)
-
 
     if (!isHigherCard(finalLeftCards, highestValueCards[0])) {
       console.log(highestValueCards[0])

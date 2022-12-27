@@ -83,13 +83,13 @@ function getFirstPlayerIndex (playersIds, history) {
 
 function getFinalRemainingCards (cardSuit, myCards, playedCards, handsHistory) {
   const totalRemaingCards = cardsNotPlayed(cardSuit, handsHistory)
-
   let suitCards = getSuitCards(playedCards, cardSuit)
 
   let leftCards = ''
-
   let opponentsCards = ''
+
   if (suitCards.length != 0)
+    // all cards left - cards in played
     leftCards = getRemainingCards(totalRemaingCards, suitCards)
 
   if (leftCards.length === 0) {
@@ -97,12 +97,9 @@ function getFinalRemainingCards (cardSuit, myCards, playedCards, handsHistory) {
     return opponentsCards
   }
 
-  // all cards left - cards in played
-
-  const finalLeftCards = getRemainingCards(totalRemaingCards, leftCards)
-
   // all card with oppoenent
-  opponentsCards = getRemainingCards(finalLeftCards, myCards)
+  opponentsCards = getRemainingCards(leftCards, myCards)
+
   return opponentsCards
 }
 
@@ -133,7 +130,6 @@ function setPlayedCards (playersIds, history) {
 
   return playersCards
 }
-
 
 module.exports = {
   remainingPlayerHistory,

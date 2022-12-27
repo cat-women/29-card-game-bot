@@ -27,6 +27,8 @@ function bid (payload) {
   const playerId = payload.playerId
   const myCardValue = getCardValue(cards)
 
+  console.log(myCardValue)
+
   if (bidHistory.length === 0) {
     if (myCardValue > MIN_BID)
       return {
@@ -39,10 +41,9 @@ function bid (payload) {
 
   const highestBid = getHighestBid(bidHistory)
   const ownIndex = playerIds.indexOf(playerId)
-  console.log("hihgestbid ",highestBid)
-  console.log("mycard value ",myCardValue)
+  console.log('hihgestbid ', highestBid)
+  console.log('mycard value ', myCardValue)
 
-  
   if (highestBid.value === 0) {
     if (myCardValue > MIN_BID)
       return {
@@ -53,11 +54,10 @@ function bid (payload) {
     }
   }
 
-
   // if partner is bidding
   if (
     (ownIndex - 2 + 4) % 4 === playerIds.indexOf(highestBid.bidder) &&
-    highestBid.value > MIN_BID 
+    highestBid.value > MIN_BID
   ) {
     return {
       bid: PASS_BID
@@ -71,12 +71,12 @@ function bid (payload) {
   //   }
 
   // if i have better cards
-  if (myCardValue > highestBid.value && highestBid.value <= 19){
+  if (myCardValue > highestBid.value && highestBid.value <= 19) {
     return {
       bid: highestBid.value + 1
     }
   }
-  
+
   return {
     bid: PASS_BID
   }
@@ -95,23 +95,56 @@ function getCardValue (cards) {
 
   const faces = {}
   const suits = {}
+  let myCards = new Map()
+  let cardSuits = ['C', 'D', 'S', 'H']
+
+  cardSuits.map(s => myCards.set(s, []))
+
   cards.forEach(function (x) {
+    myCards.get(x[1]).push(x[0])
     faces[x[0]] = (faces[x[0]] || 0) + 1
     suits[x[1]] = (suits[x[1]] || 0) + 1
   })
 
-  for (const [key, value] of Object.entries(suits)) {
-    if (
-      (faces['J'] === 1 && value == 2) ||
-      (faces['1'] === 1 && faces['9'] === 1 && value == 2)
-    )
-      return 17
+console.log(myCards)
+let result = 0
+  cardSuits.map(s => {
+    let cards = myCards.get(s)
+    if (cards.length > 1) {
+      if (cards.includes('J') && cards.includes('1')) { result = 17}
+      if (cards.includes('J') && cards.includes('T')) { 
+        result = 17
+      }
 
-    if ((faces['J'] === 2 && value == 2) || value === 3) return 18
-    if (faces['J'] === 3 || value == 4) return 19
-  }
+      if (cards.includes('J') && cards.includes('9')) result = 18 
 
-  return 0
+      if (cards.includes('1') && cards.includes('9')) result = 17
+      
+      let count = 0
+      cards.map((f) =>{
+        if(f == 'J') count ++;
+      })
+      if( count > 2) result = 19
+
+      if (cards.includes('J') && cards.includes('9')) result = 17
+            
+    }
+    if(cards.length === 3 && (cards.includes('1') ||cards.includes('j') ||cards.includes('9') ))
+    result = 18 
+  })
+
+  // for (const [key, value] of Object.entries(suits)) {
+  //   if (
+  //     (faces['J'] === 1 && value == 2) ||
+  //     (faces['1'] === 1 && faces['9'] === 1 && value == 2)
+  //   )
+  //     return 17
+
+  //   if ((faces['J'] === 2 && value == 2) || value === 3) return 18
+  //   if (faces['J'] === 3 || value == 4) return 19
+  // }
+
+  return result
 }
 
 function getHighestBid (bidHistory) {

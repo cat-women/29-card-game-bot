@@ -42,7 +42,7 @@ function secondHand (
   if (trumpRevealed && trumpSuit) {
     finalLeftTrumpCards = getFinalRemainingCards(
       trumpSuit,
-      myCards,
+      ownCards,
       playedCards,
       handsHistory
     )
@@ -72,14 +72,12 @@ function secondHand (
       playedSuit,
       handsHistory
     )
-    console.log('remaingSuitCards', remaingSuitCards)
     let remaingTrumpCards = remainingPlayerHistory(
       ownId,
       playersIds,
       trumpSuit,
       handsHistory
     )
-    console.log('remaingTrumpCards', remaingTrumpCards)
 
     let partnerPrevCard =
       remaingSuitCards.partnerPrevCard === 0

@@ -1,5 +1,10 @@
-const { last, getSuitCards, sortCard, getFace } = require('../shared')
-
+const {
+  last,
+  getSuitCards,
+  sortCard,
+  getFace,
+  isHigherCard
+} = require('../shared')
 const {
   remainingPlayerHistory,
   getSecondPlayerCard,
@@ -14,14 +19,20 @@ function iRevealTrump (myCards, playedCards, trumpSuit) {
   const sortedTrumpSuitCards = sortCard(trumpSuitCards)
   const playedTrumpcards = getSuitCards(playedCards, trumpSuit)
 
+  console.log('you reveal trump card ')
+
   if (trumpSuitCards.length === 0) return mySortedCards[0]
+  if (playedTrumpcards.length > 0) {
+    if (isHigherCard(sortedTrumpSuitCards, last(sortCard(playedTrumpcards))))
+      return last(sortedTrumpSuitCards)
+  }
 
   if (getFace(last(sortedTrumpSuitCards)) !== 'J')
     return last(sortedTrumpSuitCards)
-    
+
   const temp = sortedTrumpSuitCards.slice()
   const firstThree = temp.splice(sortedTrumpSuitCards.length - 3, 3)
-  if (firstThree.length > 1) {   
+  if (firstThree.length > 1) {
     if (
       getFace(last(firstThree)) === 'J' &&
       (getFace(firstThree[firstThree.length - 2]) === '9' ||

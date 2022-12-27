@@ -57,13 +57,13 @@ function fourthHand (
       }
       return last(sortedSuitCards)
     }
-
-    return sortedSuitCards[0]
+    // work herer 
+    
+    return last(sortedSuitCards)
   }
 
   // I dont have card from same suit
   if (trumpSuit && trumpRevealed) {
-    
     const myTrumpSuitCards = getSuitCards(myCards, trumpSuit)
     const mySortedTrumpSuitCards = sortCard(myTrumpSuitCards)
 
@@ -86,6 +86,7 @@ function fourthHand (
         }
         if (getSuit(winningCard) !== trumpSuit) return mySortedTrumpSuitCards[0]
       }
+      
       if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
     }
     if (winner === playersIds[parterIndex]) return last(mySortedCards)

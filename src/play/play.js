@@ -21,6 +21,8 @@ function play (payload) {
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
   const playersIds = payload.playerIds
+
+  console.log("let me play you")
   if (ownCards.length === 1) {
     console.log('handsHistory', payload)
     return {
