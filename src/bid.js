@@ -21,56 +21,86 @@ const PASS_BID = 0
 const MAX_BID = 28
 
 function bid (payload) {
+  console.log(payload.bidState)
   const cards = payload.cards
   const bidHistory = payload.bidHistory
+  const bidState = payload.bidState
   const playerIds = payload.playerIds
   const playerId = payload.playerId
   const myCardValue = getCardValue(cards)
 
   console.log(myCardValue)
-
+console.log("payload",payload)
   if (bidHistory.length === 0) {
+    if (myCardValue == MIN_BID)
+      return {
+        bid: MIN_BID
+      }
     if (myCardValue > MIN_BID)
       return {
         bid: 17
       }
     return {
-      bid: MIN_BID
+      bid: PASS_BID
     }
   }
 
   const highestBid = getHighestBid(bidHistory)
   const ownIndex = playerIds.indexOf(playerId)
+
   console.log('hihgestbid ', highestBid)
   console.log('mycard value ', myCardValue)
 
-  if (highestBid.value === 0) {
+  // if plala ko player has passed bid
+  if (bidState.defenderBid === 0) {
     if (myCardValue > MIN_BID)
       return {
         bid: 17
       }
+    else if (myCardValue === 16) {
+      return {
+        bid: MIN_BID
+      }
+    }
     return {
-      bid: MIN_BID
+      bid: PASS_BID
     }
   }
+  //  If  im the highest bidder
+  // for matched case
 
-  // if partner is bidding
   if (
-    (ownIndex - 2 + 4) % 4 === playerIds.indexOf(highestBid.bidder) &&
+    ownIndex === playerIds.indexOf(bidState.defenderId)
+  ) {
+    console.log("Challenging mode ")
+    
+    if (myCardValue > bidState.challengerBid)
+      return {
+        bid: highestBid.value + 1
+      }
+    else
+      return {
+        bid: PASS_BID
+      }
+  }
+  // if partner is bidding
+
+  if (
+    (ownIndex - 2 + 4) % 4 === playerIds.indexOf(bidState.defenderId) &&
     highestBid.value > MIN_BID
   ) {
     return {
       bid: PASS_BID
     }
   }
+  // if my card value is equal to highest bid - > challange
+  // console.log("--- match case ",bidState)
 
-  // if I'm biddding highest
-  // if (myCardValue >= 18 && highestBid.value <= 19 )
+  // if (myCardValue >= bidState.defenderBid) {
   //   return {
-  //     bid: highestBid.value + 1
+  //     bid: myCardValue
   //   }
-
-  // if i have better cards
+  // }
   if (myCardValue > highestBid.value && highestBid.value <= 19) {
     return {
       bid: highestBid.value + 1
@@ -106,31 +136,38 @@ function getCardValue (cards) {
     suits[x[1]] = (suits[x[1]] || 0) + 1
   })
 
-console.log(myCards)
-let result = 0
+  console.log(myCards)
+  let result = 0
   cardSuits.map(s => {
     let cards = myCards.get(s)
     if (cards.length > 1) {
-      if (cards.includes('J') && cards.includes('1')) { result = 17}
-      if (cards.includes('J') && cards.includes('T')) { 
+      if (cards.includes('J') && cards.includes('1')) {
+        result = 17
+      }
+      if (cards.includes('J') && cards.includes('T')) {
         result = 17
       }
 
-      if (cards.includes('J') && cards.includes('9')) result = 18 
+      if (cards.includes('J') && cards.includes('9')) result = 18
 
       if (cards.includes('1') && cards.includes('9')) result = 17
-      
+
       let count = 0
-      cards.map((f) =>{
-        if(f == 'J') count ++;
+      cards.map(f => {
+        if (f == 'J') count++
       })
-      if( count > 2) result = 19
+      if (count > 2) result = 19
 
       if (cards.includes('J') && cards.includes('9')) result = 17
-            
+
+      if (cards.includes('J') || (cards.includes('9') && cards.includes('9')))
+        result = 16
     }
-    if(cards.length === 3 && (cards.includes('1') ||cards.includes('j') ||cards.includes('9') ))
-    result = 18 
+    if (
+      cards.length === 3 &&
+      (cards.includes('1') || cards.includes('j') || cards.includes('9'))
+    )
+      result = 18
   })
 
   // for (const [key, value] of Object.entries(suits)) {
