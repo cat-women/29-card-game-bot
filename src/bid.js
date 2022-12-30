@@ -21,7 +21,6 @@ const PASS_BID = 0
 const MAX_BID = 28
 
 function bid (payload) {
-  console.log(payload.bidState)
   const cards = payload.cards
   const bidHistory = payload.bidHistory
   const bidState = payload.bidState
@@ -29,8 +28,6 @@ function bid (payload) {
   const playerId = payload.playerId
   const myCardValue = getCardValue(cards)
 
-  console.log(myCardValue)
-console.log("payload",payload)
   if (bidHistory.length === 0) {
     if (myCardValue == MIN_BID)
       return {
@@ -48,8 +45,6 @@ console.log("payload",payload)
   const highestBid = getHighestBid(bidHistory)
   const ownIndex = playerIds.indexOf(playerId)
 
-  console.log('hihgestbid ', highestBid)
-  console.log('mycard value ', myCardValue)
 
   // if plala ko player has passed bid
   if (bidState.defenderBid === 0) {
@@ -136,7 +131,6 @@ function getCardValue (cards) {
     suits[x[1]] = (suits[x[1]] || 0) + 1
   })
 
-  console.log(myCards)
   let result = 0
   cardSuits.map(s => {
     let cards = myCards.get(s)

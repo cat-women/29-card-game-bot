@@ -1,9 +1,9 @@
 const card = []
 
 card['7'] = 0
-card['8'] = 0
-card['Q'] = 0
-card['K'] = 0
+card['8'] = 0.5
+card['Q'] = 0.7
+card['K'] = 0.9
 card['T'] = 1
 card['1'] = 1.5
 card['9'] = 2
@@ -21,5 +21,5 @@ const playersCardHistory = {
   opp0: {},
   you1: {},
   opp1: {}
-} 
+}
 module.exports = { card, Deck }

@@ -7,12 +7,13 @@ const {
   cardsNotPlayed,
   currentWinning,
   getRemainingCards,
-  isHigherCard
+  isHigherCard,
+  secondLast
 } = require('../shared')
 
 const { getFinalRemainingCards } = require('./common')
 const iRevealTrump = require('./iRevealTrump')
-const { setPlayedCards } = require('./common')
+const { setPlayedCards, nullify } = require('./common')
 
 function thirdHand (
   ownId,
@@ -21,13 +22,18 @@ function thirdHand (
   trumpSuit,
   trumpRevealed,
   handsHistory,
-  playersIds
+  playersIds,
+  payload
 ) {
   const myCards = ownCards.slice()
+
   const playedSuit = getSuit(playedCards[0])
   const mySortedCards = sortCard(ownCards)
 
   const ownSuitCards = getSuitCards(ownCards, playedSuit)
+
+  const myTeam = payload.teams[0]
+  const oppTeam = payload.teams[1]
 
   const ownIdIndex = playersIds.indexOf(ownId)
   const parterIndex = (ownIdIndex - 2 + 4) % 4
@@ -170,13 +176,13 @@ function thirdHand (
     if (myTrumpSuitCards.length > 0) {
       let finalLeftTrumpCards = getFinalRemainingCards(
         trumpSuit,
-        myCards,
+        myTrumpSuitCards,
         playedCards,
         handsHistory
       )
       let finalLeftCards = getFinalRemainingCards(
         playedSuit,
-        myCards,
+        [],
         playedCards,
         handsHistory
       )
@@ -196,35 +202,83 @@ function thirdHand (
               return last(mySortedTrumpSuitCards)
           }
         }
+
         // my trump card is the wining card
         if (finalLeftTrumpCards.length === 0)
           return last(mySortedTrumpSuitCards)
 
-        if (
-          isHigherCard(
-            finalLeftTrumpCards,
-            last(mySortedTrumpSuitCards) &&
-              getSuit(lastPlayerCard) !== trumpSuit
-          )
-        )
-          return last(mySortedTrumpSuitCards)
+        console.log('finalLeftTrumpCards', finalLeftTrumpCards)
 
-        return sortCard(nonTrumpCards)[0]
+        if (!isHigherCard(finalLeftTrumpCards, last(mySortedTrumpSuitCards))) {
+          if (mySortedTrumpSuitCards.length > 1) {
+            let first = last(mySortedTrumpSuitCards)
+            let second = secondLast(mySortedTrumpSuitCards)
+
+            if (getFace(first) === 'J' && getFace(second) === '9') return second
+          }
+          /***
+           * check last payers has trump card or not
+           *
+           *
+           *
+           *
+           *
+           *
+           *
+           */
+          return last(mySortedTrumpSuitCards)
+        }
+
+        if (nonTrumpCards.length > 0) return sortCard(nonTrumpCards)[0]
+
+        return mySortedCards[0]
       }
 
       // partner winning
 
       // last have same suit card
-      if (finalLeftCards.length > 0 && getSuit(lastPlayerCard) === playedSuit) {
+      if (finalLeftCards.length > 0) {
         // partner card is  winning
+
+        console.log('finalLeftCards', finalLeftCards, winningCard)
         if (!isHigherCard(finalLeftCards, winningCard)) {
+          //no trum left
+          if (finalLeftTrumpCards.length === 0) {
+            if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
+            return last(mySortedCards)
+          }
+
           if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
+
+          // check if last players  has trump card
+          return mySortedCards[0]
+        }
+
+        /**
+         * check if i can win in next tourn tooo
+         *
+         *
+         *
+         *
+         *
+         *
+         *
+         */
+        // check if i have winnign trump card
+
+        if (finalLeftTrumpCards.length === 0) {
+          if (mySortedTrumpSuitCards.length > 1)
+            return secondLast(mySortedTrumpSuitCards)
+          return last(mySortedTrumpSuitCards)
+        }
+        if (finalLeftTrumpCards.length > 0) {
+          if (!isHigherCard(finalLeftTrumpCards, last(mySortedTrumpSuitCards)))
+            return last(mySortedTrumpSuitCards)
         }
 
         // partner not wining case
         return mySortedCards[0]
       }
-
       if (
         finalLeftTrumpCards.length > 0 &&
         isHigherCard(
@@ -242,13 +296,17 @@ function thirdHand (
       ) {
         if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
       }
-      return sortCard(nonTrumpCards)[0]
+      if (nonTrumpCards.length > 0) return sortCard(nonTrumpCards)[0]
     }
-    if (winner === parterIndex) return last(sortCard(nonTrumpCards))
+    if (winner === parterIndex && nonTrumpCards.length > 0)
+      return last(sortCard(nonTrumpCards))
     return mySortedCards[0]
   }
 
   if (winner === parterIndex) return mySortedCards[0]
+
+  if (nullify(myTeam, oppTeam, handsHistory)) return mySortedCards[0]
+
   return 0
 }
 
@@ -299,6 +357,11 @@ function thirdPlayerHistory (ownId, playersIds, playedSuit, handsHistory) {
 
   return lastPlayerCard
 }
+
+//why not working 
+// changes this function
+
+//why not working 
 // changes this function
 function whatIsLastPlayerCard (handsHistory, cardSuit, playersIds) {
   const history = handsHistory.filter(hand => getSuit(hand[1][0]) === cardSuit)

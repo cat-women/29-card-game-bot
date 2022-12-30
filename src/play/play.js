@@ -21,30 +21,16 @@ function play (payload) {
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
   const playersIds = payload.playerIds
-
-  console.log("let me play you")
   if (ownCards.length === 1) {
-    console.log('handsHistory', payload)
     return {
       card: ownCards[0]
-    }
-  }
-  // first move of game
-  if (handsHistory.length === 0 && thisRoundCards.length === 0) {
-    const myCards = sortCard(ownCards)
-    if (getFace(last(myCards)) === 'J')
-      return {
-        card: last(myCards)
-      }
-    return {
-      card: myCards[0]
     }
   }
 
   // first hand case
   if (thisRoundCards.length === 0) {
     return {
-      card: firstHand(ownCards, trumpSuit, trumpRevealed, handsHistory)
+      card: firstHand(ownCards, trumpSuit, trumpRevealed, handsHistory, payload)
     }
   }
 
@@ -57,7 +43,8 @@ function play (payload) {
       trumpSuit,
       trumpRevealed,
       handsHistory,
-      playersIds
+      playersIds,
+      payload
     )
     if (cardToPlay !== 0)
       return {
@@ -74,7 +61,8 @@ function play (payload) {
       trumpSuit,
       trumpRevealed,
       handsHistory,
-      playersIds
+      playersIds,
+      payload
     )
     if (cardToPlay !== 0)
       return {
@@ -91,7 +79,8 @@ function play (payload) {
       trumpSuit,
       trumpRevealed,
       handsHistory,
-      playersIds
+      playersIds,
+      payload
     )
     if (cardToPlay !== 0)
       return {

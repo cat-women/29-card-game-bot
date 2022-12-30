@@ -14,7 +14,8 @@ const {
   getSecondPlayerCard,
   getThirdPlayerCard,
   getFirstPlayerIndex,
-  getFinalRemainingCards
+  getFinalRemainingCards,
+  nullify
 } = require('./common.js')
 
 const iRevealTrump = require('./iRevealTrump')
@@ -26,7 +27,8 @@ function secondHand (
   trumpSuit,
   trumpRevealed,
   handsHistory,
-  playersIds
+  playersIds,
+  payload
 ) {
   const myCards = ownCards.slice()
   const playedSuit = getSuit(playedCards[0])
@@ -36,6 +38,10 @@ function secondHand (
 
   const ownIdIndex = playersIds.indexOf(ownId)
   const parterIndex = (ownIdIndex - 2 + 4) % 4
+
+  const myTeam = payload.teams[0]
+  const oppTeam = payload.teams[1]
+
   if (ownCards.length === 1) return ownCards[0]
 
   let finalLeftTrumpCards
@@ -61,10 +67,8 @@ function secondHand (
     const sortedSuitCards = sortCard(ownSuitCards)
 
     // no winning card
-    if (!isHigherCard(sortedSuitCards, playedCards[0])) {
-      console.log('sorted cards', sortedSuitCards)
+    if (!isHigherCard(sortedSuitCards, playedCards[0]))
       return sortedSuitCards[0]
-    }
 
     let remaingSuitCards = remainingPlayerHistory(
       ownId,
@@ -78,6 +82,12 @@ function secondHand (
       trumpSuit,
       handsHistory
     )
+    console.log('finalLeftCards', finalLeftCards, sortedSuitCards)
+    if (
+      finalLeftCards.length > 0 &&
+      isHigherCard(finalLeftCards, last(sortedSuitCards))
+    )
+      return sortedSuitCards[0]
 
     let partnerPrevCard =
       remaingSuitCards.partnerPrevCard === 0
@@ -88,33 +98,30 @@ function secondHand (
       remaingSuitCards.oppPrevCard === 0
         ? remaingTrumpCards.oppPrevCard
         : remaingSuitCards.oppPrevCard
+
     // if opponetent have same suit card, check if i have highercard
+    console.log('partnerPrevCard', partnerPrevCard, 'oppPrevCard', oppPrevCard)
     if (
       finalLeftCards.length > 0 &&
       getSuit(oppPrevCard) === playedSuit &&
-      !currentWinning(
-        finalLeftCards,
-        getSuit(last(sortedSuitCards)),
-        handsHistory
-      )
+      !isHigherCard(finalLeftCards, last(sortedSuitCards))
     )
       return last(sortedSuitCards)
+
     if (
       getSuit(oppPrevCard) !== playedSuit &&
       getSuit(oppPrevCard) !== trumpSuit
-    )
+    ) {
       return last(sortedSuitCards)
-    return sortedSuitCards[0]
+    }
 
     // if (currentWinning(sortedSuitCards, playedSuit, handsHistory))
     //   return last(sortedSuitCards)
-
     return sortedSuitCards[0]
   }
 
   // I dont have card from same suit
   if (trumpSuit && trumpRevealed) {
-
     //i reveal trump case
     const wasTrumpRevealInThisRound =
       trumpRevealed.hand === handsHistory.length + 1
@@ -170,6 +177,8 @@ function secondHand (
 
     return mySortedCards[0]
   }
+
+  if (nullify(myTeam, oppTeam, handsHistory)) return mySortedCards[0]
 
   return 0
 }

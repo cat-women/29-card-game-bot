@@ -11,19 +11,19 @@ const {
   isHigherCard
 } = require('../shared')
 
-function remainingPlayerHistory (ownId, playersIds, playedSuit, handsHistory) {
-  const playersCards = setPlayedCards(playersIds, handsHistory)
+function remainingPlayerHistory (ownId, playerIds, playedSuit, handsHistory) {
+  const playersCards = setPlayedCards(playerIds, handsHistory)
 
   for (let i = 0; i < playersCards.get('firstCard').length; i++) {
     if (playersCards.get('firstCard')[i][1] === playedSuit) {
-      const fistPlayerIndex = playersIds.indexOf(
+      const fistPlayerIndex = playerIds.indexOf(
         playersCards.get('firstPlayer')[i]
       )
       console.log(fistPlayerIndex)
 
-      const secondPlayer = playersIds[(fistPlayerIndex + 1) % 4]
+      const secondPlayer = playerIds[(fistPlayerIndex + 1) % 4]
       const secondCard = playersCards.get(secondPlayer)[i]
-      const thirdPlayer = playersIds[(fistPlayerIndex + 2) % 4]
+      const thirdPlayer = playerIds[(fistPlayerIndex + 2) % 4]
       const thirdCard = playersCards.get(thirdPlayer)[i]
 
       return { partnerPrevCard: thirdCard, oppPrevCard: secondCard }
@@ -76,8 +76,8 @@ function getThirdPlayerCard (ownIdIndex, firstPlayerIndex, card) {
   return card[secondPlayerIndex]
 }
 
-function getFirstPlayerIndex (playersIds, history) {
-  const firstPlayerIndex = playersIds.indexOf(history[0])
+function getFirstPlayerIndex (playerIds, history) {
+  const firstPlayerIndex = playerIds.indexOf(history[0])
   return firstPlayerIndex
 }
 
@@ -103,10 +103,10 @@ function getFinalRemainingCards (cardSuit, myCards, playedCards, handsHistory) {
   return opponentsCards
 }
 
-function setPlayedCards (playersIds, history) {
+function setPlayedCards (playerIds, history) {
   let playersCards = new Map()
 
-  playersIds.map(id => {
+  playerIds.map(id => {
     playersCards.set(id, [])
   })
 
@@ -115,10 +115,10 @@ function setPlayedCards (playersIds, history) {
 
   history.map(item => {
     const first = item[0]
-    const firstIndex = playersIds.indexOf(first)
-    const second = playersIds[(firstIndex + 1) % 4]
-    const third = playersIds[(firstIndex + 2) % 4]
-    const fourth = playersIds[(firstIndex + 3) % 4]
+    const firstIndex = playerIds.indexOf(first)
+    const second = playerIds[(firstIndex + 1) % 4]
+    const third = playerIds[(firstIndex + 2) % 4]
+    const fourth = playerIds[(firstIndex + 3) % 4]
 
     playersCards.get(first).push(item[1][0])
     playersCards.get(second).push(item[1][1])
@@ -131,11 +131,64 @@ function setPlayedCards (playersIds, history) {
   return playersCards
 }
 
+function haveTrumpCard (payload, player1, player2) {
+  const trumpRevealed = payload.trumpRevealed
+  const hand = trumpRevealed.hand
+
+  const revealer = trumpRevealed.playerId
+
+  const playerIds = payload.playerIds
+  const handsHistory = payload.handsHistory
+
+  const cardsHistory = setPlayedCards(playerIds, handsHistory)
+  const firstCards = cardsHistory.get('firstCard')
+
+  const player1Cards = cardsHistory.get(playerIds[player1])
+  const player2Cards = cardsHistory.get(playerIds[player2])
+
+  const trumpSuit = payload.trumpSuit
+
+  var count = 0
+  for (var i = 0; i < firstCards.length; i++) {
+    if (
+      getSuit(firstCards[i]) !== getSuit(player1Cards[i]) &&
+      (getFace(player2Cards[i]) !== 'J' ||
+        handsHistory[i][2] !== playerIds[player2])
+    )
+      count++
+  }
+  if (count > 0) return true
+
+  const revealerPlayedCards = cardsHistory.get(revealer)
+  const playedCard = revealerPlayedCards[hand - 1]
+
+  if (revealer === playerIds[player1]) {
+    if (getSuit(playedCard) === trumpSuit) return true
+  }
+
+  return false
+}
+
+function nullify (myTeam,oppTeam,handsHistory) {
+  if (
+    (handsHistory.length > 4 &&
+      oppTeam.bid !== 0 &&
+      oppTeam.won > oppTeam.bid * 0.65) ||
+    (handsHistory.length > 4 &&
+      myTeam.bid !== 0 &&
+      myTeam.won < myTeam.bid * 0.7)
+  )
+    return true
+  return false
+}
+
 module.exports = {
   remainingPlayerHistory,
   getSecondPlayerCard,
   getThirdPlayerCard,
   getFirstPlayerIndex,
   getFinalRemainingCards,
-  setPlayedCards
+  setPlayedCards,
+  haveTrumpCard,
+  nullify
 }

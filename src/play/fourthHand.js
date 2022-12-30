@@ -4,9 +4,11 @@ const {
   getSuitCards,
   sortCard,
   getRemainingCards,
-  isHigherCard
+  isHigherCard,
+  secondLast
 } = require('../shared')
 
+const { nullify, getFinalRemainingCards } = require('./common')
 const iRevealTrump = require('./iRevealTrump')
 
 function fourthHand (
@@ -16,13 +18,17 @@ function fourthHand (
   trumpSuit,
   trumpRevealed,
   handsHistory,
-  playersIds
+  playersIds,
+  payload
 ) {
   const myCards = ownCards.slice()
 
   const playedSuit = getSuit(playedCards[0])
-  const mySortedCards = sortCard(ownCards)
+  const mySortedCards = sortCard(myCards)
   const ownSuitCards = getSuitCards(ownCards, playedSuit)
+
+  const myTeam = payload.teams[0]
+  const oppTeam = payload.teams[1]
 
   const ownIdIndex = playersIds.indexOf(ownId)
 
@@ -41,7 +47,6 @@ function fourthHand (
     trumpSuit,
     trumpRevealed
   )
-  
 
   // i have same suit card
   if (ownSuitCards.length > 0) {
@@ -57,8 +62,8 @@ function fourthHand (
       }
       return last(sortedSuitCards)
     }
-    // work herer 
-    
+    // work herer
+
     return last(sortedSuitCards)
   }
 
@@ -77,26 +82,73 @@ function fourthHand (
 
     if (myTrumpSuitCards.length > 0) {
       // opponent is winning
-      if (winner !== playersIds[parterIndex]) {
+
+      if (winner !== parterIndex) {
         // winning card is trump card
         if (getSuit(winningCard) === trumpSuit) {
-          if (isHigherCard(mySortedTrumpSuitCards, winningCard))
+          if (isHigherCard(mySortedTrumpSuitCards, winningCard)) {
             return last(mySortedTrumpSuitCards)
-          else return sortCard(nonTrumpCards)[0]
+          }
+          if (nonTrumpCards.length > 0) return sortCard(nonTrumpCards)[0]
+          return mySortedCards[0]
         }
         if (getSuit(winningCard) !== trumpSuit) return mySortedTrumpSuitCards[0]
       }
-      
+
+      const finalLeftTrumpCards = getFinalRemainingCards(
+        trumpSuit,
+        mySortedTrumpSuitCards,
+        playedCards,
+        handsHistory
+      )
+      // if im gonna win in next round and can win this round throw winning card
+      var highestTrump = last(mySortedTrumpSuitCards)
+
+      if (finalLeftTrumpCards.length > 0) {
+        // I have higest trump card
+        if (
+          mySortedTrumpSuitCards.length > 1 &&
+          !isHigherCard(finalLeftTrumpCards, highestTrump)
+        ) {
+          // partner winning with trump card
+          if (getSuit(winningCard) === trumpSuit) {
+            const temp = mySortedTrumpSuitCards.slice()
+
+            let index = mySortedTrumpSuitCards.indexOf(highestTrump)
+
+            temp.splice(index, 1)
+            // my second card is higher then partner winning card
+            if (isHigherCard(temp, winningCard)) return last(temp)
+
+            if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
+
+            return last(mySortedCards)
+          }
+          //  my second trump card is winnign among all
+          if (
+            !isHigherCard(
+              finalLeftTrumpCards,
+              secondLast(mySortedTrumpSuitCards)
+            )
+          )
+            return secondLast(mySortedTrumpSuitCards)
+        }
+      }
       if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
     }
-    if (winner === playersIds[parterIndex]) return last(mySortedCards)
+
+    if (winner === parterIndex) {
+      return last(mySortedCards)
+    }
     return mySortedCards[0]
   }
   // if parner is winning dont reveal trump
   if (winner === parterIndex) {
     if (nonTrumpCards.length > 0) return last(sortCard(nonTrumpCards))
-    else return last(mySortedCards)
+    return last(mySortedCards)
   }
+
+  if (nullify(myTeam, oppTeam, handsHistory)) return mySortedCards[0]
 
   return 0
 }

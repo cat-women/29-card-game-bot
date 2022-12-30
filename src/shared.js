@@ -33,14 +33,14 @@ function cardsNotPlayed (cardSuit, handsHistory) {
   if (handsHistory.length === 0) return cards
 
   let playedCards = []
-  
+
   handsHistory.forEach(handsHistory => {
     // get only from that partcuar suit
     let suitCards = getSuitCards(handsHistory[1], cardSuit)
     playedCards = playedCards.concat(suitCards)
   })
 
- playedCards.forEach(card => {
+  playedCards.forEach(card => {
     const index = cards.indexOf(card)
     if (index > -1) {
       cards.splice(index, 1)
@@ -51,7 +51,6 @@ function cardsNotPlayed (cardSuit, handsHistory) {
 }
 
 function currentWinning (myCards, cardSuit, handsHistory) {
-
   const remainingCards = cardsNotPlayed(cardSuit, handsHistory)
   if (remainingCards.length === 0) return true
 
@@ -66,19 +65,19 @@ function currentWinning (myCards, cardSuit, handsHistory) {
 
 function getRemainingCards (allCards, myCards) {
   if (myCards.length === 0) return allCards
-  allCards.map((card, index) => {
-    myCards.map(currentValue => {
-      if (currentValue === card) allCards.splice(index, 1)
-    })
+
+  myCards.map(card => {
+    var index = allCards.indexOf(card)
+    if (allCards.includes(card)) allCards.splice(index, 1)
   })
   return allCards
 }
 
 function isHigherCard (myCard, opponentCard) {
-  if (card[getFace(last(sortCard( myCard)))] > card[getFace(opponentCard)]) return true
+  if (card[getFace(last(sortCard(myCard)))] > card[getFace(opponentCard)])
+    return true
   return false
 }
-
 
 module.exports = {
   last,
