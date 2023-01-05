@@ -35,11 +35,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
 
   let trumpSuitCards = ''
   let nonTrumpCards = ''
-
-  // let firstSuitCard = getSuitCards(myCards, getSuit(firstCard))
-  // firstCard = last(sortCard(firstSuitCard))
-
-  // count suit card you have
+  let sortedTrumpSuitCards = ''
   let suitNumber = cardSuit(ownCards)
   let temp = 0
   let suit = ''
@@ -53,9 +49,10 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
   let suitCard = getSuitCards(ownCards, suit)
   let first = last(sortCard(suitCard))
   let second = ''
+
   if (trumpSuit) {
     trumpSuitCards = sortCard(getSuitCards(ownCards, trumpSuit))
-    let sortedTrumpSuitCards = sortCard(trumpSuitCards)
+    sortedTrumpSuitCards = sortCard(trumpSuitCards)
 
     if (trumpSuitCards.length > 0) {
       first = last(sortedTrumpSuitCards)
@@ -69,10 +66,12 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
     if (second.length !== 0 && getFace(second) === '9') return second
     return first
   }
+
   if (trumpSuit && trumpRevealed && handsHistory.length > 0) {
     let isTrumPartner = haveTrumpCard(payload, partnerIndex, ownIdIndex)
     let isTrumOpp1 = haveTrumpCard(payload, oppoenent1Index, oppoenent2Index)
     let isTrumOpp2 = haveTrumpCard(payload, oppoenent2Index, oppoenent1Index)
+
     const finaLeftTrumpCards = getFinalRemainingCards(
       trumpSuit,
       myCards,
@@ -81,8 +80,6 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
     )
     // no trump suit card
     if (trumpSuitCards.length === 0) {
-      // check other have trump suit
-
       // all trump are played or opponent dont have trump card
       if (finaLeftTrumpCards.length === 0) {
         // check which one is higher card
@@ -114,12 +111,11 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
       return mySortedCards[0]
     }
 
-    const sortedTrumpSuitCards = sortCard(trumpSuitCards)
     if (finaLeftTrumpCards.length === 0) return last(sortedTrumpSuitCards)
 
     first = last(sortedTrumpSuitCards)
     second = ''
-    if (sortedTrumpSuitCards.length > 1) secondLast(sortedTrumpSuitCards)
+    if (sortedTrumpSuitCards.length > 1) second = secondLast(sortedTrumpSuitCards)
 
     if (finaLeftTrumpCards.length > 0) {
       if (!isHigherCard(finaLeftTrumpCards, first)) {
@@ -135,14 +131,12 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
         return first
       }
     }
-    console.log('mySortedCards', nonTrumpCards)
 
     if (nonTrumpCards.length > 0) {
       let lastCard = sortCard(nonTrumpCards)[0]
 
       if (isZeroCard(lastCard)) return lastCard
     }
-    console.log(mySortedCards)
     return mySortedCards[0]
   }
 
