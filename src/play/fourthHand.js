@@ -5,11 +5,14 @@ const {
   sortCard,
   getRemainingCards,
   isHigherCard,
-  secondLast
+  secondLast,
+  getFace
 } = require('../shared')
 
 const { nullify, getFinalRemainingCards } = require('./common')
 const iRevealTrump = require('./iRevealTrump')
+
+const { card } = require('../card')
 
 function fourthHand (
   ownId,
@@ -53,13 +56,28 @@ function fourthHand (
     const sortedSuitCards = sortCard(ownSuitCards)
     // opponent is winning
     if (winner !== parterIndex) {
+      // opponent wining with played suit
+      if (getSuit(winningCard) === playedSuit) {
+        if (isHigherCard(sortedSuitCards, winningCard)) {
+          if (ownSuitCards.length > 1) {
+            let second = secondLast(sortedSuitCards)
+            if (card[getFace(second)] > card[getFace(winningCard)])
+              return second
+          }
+
+          return last(sortedSuitCards)
+        }
+      }
+      // if trump suit was played
       if (trumpRevealed && getSuit(winningCard) === trumpSuit) {
         return sortedSuitCards[0]
       }
 
+      // if i have i dont have wining card
       if (!isHigherCard(sortedSuitCards, winningCard)) {
         return sortedSuitCards[0]
       }
+
       return last(sortedSuitCards)
     }
     // work herer
@@ -87,6 +105,11 @@ function fourthHand (
         // winning card is trump card
         if (getSuit(winningCard) === trumpSuit) {
           if (isHigherCard(mySortedTrumpSuitCards, winningCard)) {
+            if (mySortedTrumpSuitCards.length > 1) {
+              let second = secondLast(mySortedTrumpSuitCards)
+              if (card[getFace(second)] > card[getFace(winningCard)])
+                return second
+            }
             return last(mySortedTrumpSuitCards)
           }
           if (nonTrumpCards.length > 0) return sortCard(nonTrumpCards)[0]

@@ -8,7 +8,7 @@
     "devStart": "nodemon index.js",
     "lint": "eslint src --ext .js",
     "lint:fix": "eslint src --fix --ext .js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "test"
   },
   "author": "cat-women",
   "license": "ISC",

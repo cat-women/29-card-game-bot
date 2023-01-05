@@ -11,14 +11,20 @@ const {
   isHigherCard
 } = require('../shared')
 
-const { haveTrumpCard, getFinalRemainingCards } = require('./common')
+const {
+  haveTrumpCard,
+  getFinalRemainingCards,
+  cardSuit,
+  isZeroCard
+} = require('./common')
 /**
  * need to do a lot of works
  *
  */
 function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
-  const mySortedCards = sortCard(myCards)
   const ownCards = myCards.slice()
+  const mySortedCards = sortCard(ownCards)
+
   const playerIds = payload.playerIds
   const ownId = payload.playerId
 
@@ -27,46 +33,46 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
   const partnerIndex = (ownIdIndex + 2 + 4) % 4
   const oppoenent2Index = (ownIdIndex + 3 + 4) % 4
 
-  if (mySortedCards.length === 1) {
-    return mySortedCards[0]
-  }
-
   let trumpSuitCards = ''
   let nonTrumpCards = ''
 
-  let firstCard = last(mySortedCards)
-  let secondCard = '6F'
+  // let firstSuitCard = getSuitCards(myCards, getSuit(firstCard))
+  // firstCard = last(sortCard(firstSuitCard))
 
-  let firstSuitCard = getSuitCards(myCards, getSuit(firstCard))
-  if (firstSuitCard.length > 0) {
-    firstCard = last(sortCard(firstSuitCard))
-    secondCard = secondLast(sortCard(firstSuitCard))
-  }
-  if (trumpSuit) {
-    trumpSuitCards = sortCard(getSuitCards(myCards, trumpSuit))
-
-    if (trumpSuitCards.length > 1) secondCard = secondLast(trumpSuitCards)
-
-    if (trumpSuitCards.length > 0) {
-      firstCard = last(trumpSuitCards)
-      nonTrumpCards = getRemainingCards(ownCards, trumpSuitCards)
+  // count suit card you have
+  let suitNumber = cardSuit(ownCards)
+  let temp = 0
+  let suit = ''
+  for (const key in suitNumber) {
+    if (temp < suitNumber[key]) {
+      temp = suitNumber[key]
+      suit = key
     }
   }
-  if (
-    getFace(firstCard) === 'J' &&
-    getFace(secondCard) === '9' &&
-    handsHistory.length < 3
-  ) {
-    return secondCard
+
+  let suitCard = getSuitCards(ownCards, suit)
+  let first = last(sortCard(suitCard))
+  let second = ''
+  if (trumpSuit) {
+    trumpSuitCards = sortCard(getSuitCards(ownCards, trumpSuit))
+    let sortedTrumpSuitCards = sortCard(trumpSuitCards)
+
+    if (trumpSuitCards.length > 0) {
+      first = last(sortedTrumpSuitCards)
+      if (trumpSuitCards.length > 1) second = secondLast(sortedTrumpSuitCards)
+
+      nonTrumpCards = getRemainingCards(myCards, trumpSuitCards)
+    }
   }
 
-  if (handsHistory.length < 4 && getFace(firstCard) === 'J') return firstCard
-
-  if (trumpSuit && trumpRevealed) {
+  if (handsHistory.length < 3 && getFace(first) === 'J') {
+    if (second.length !== 0 && getFace(second) === '9') return second
+    return first
+  }
+  if (trumpSuit && trumpRevealed && handsHistory.length > 0) {
     let isTrumPartner = haveTrumpCard(payload, partnerIndex, ownIdIndex)
     let isTrumOpp1 = haveTrumpCard(payload, oppoenent1Index, oppoenent2Index)
     let isTrumOpp2 = haveTrumpCard(payload, oppoenent2Index, oppoenent1Index)
-
     const finaLeftTrumpCards = getFinalRemainingCards(
       trumpSuit,
       myCards,
@@ -82,27 +88,25 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
         // check which one is higher card
 
         const mySortedCardsOriginal = mySortedCards.slice()
+        let temp = mySortedCards.slice()
 
-        while (mySortedCards.length > 1) {
-          let highestCard = last(mySortedCards)
+        while (temp.length > 1) {
+          let highestCard = last(temp)
 
           let suitCardNotPlayed = cardsNotPlayed(
             getSuit(highestCard),
             handsHistory
           )
 
-          let finalLeftCards = getRemainingCards(
-            suitCardNotPlayed,
-            mySortedCards
-          )
+          let finalLeftCards = getRemainingCards(suitCardNotPlayed, temp)
           if (finalLeftCards.length === 0) return highestCard
 
-          highestCard = mySortedCards.splice(myCards.length - 1, 1)
-
           if (!isHigherCard(finalLeftCards, highestCard[0])) {
-            return highestCard[0]
+            return highestCard
           }
+          temp.splice(temp.length - 1, 1)
         }
+        if (nonTrumpCards.length > 0) return sortCard(nonTrumpCards)[0]
         return mySortedCardsOriginal[0]
         // check who has trump card
       }
@@ -111,29 +115,41 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
     }
 
     const sortedTrumpSuitCards = sortCard(trumpSuitCards)
-
     if (finaLeftTrumpCards.length === 0) return last(sortedTrumpSuitCards)
 
-    console.log('finaLeftTrumpCards', finaLeftTrumpCards)
+    first = last(sortedTrumpSuitCards)
+    second = ''
+    if (sortedTrumpSuitCards.length > 1) secondLast(sortedTrumpSuitCards)
 
     if (finaLeftTrumpCards.length > 0) {
-      if (!isHigherCard(finaLeftTrumpCards, last(sortedTrumpSuitCards))) {
-        return last(sortedTrumpSuitCards)
+      if (!isHigherCard(finaLeftTrumpCards, first)) {
+        if (second.length != 0 && !isHigherCard(finaLeftTrumpCards, second))
+          return second
+
+        return first
       }
-      // both opponent might not have trump car
-      if (isTrumOpp1 || isTrumOpp2) return mySortedCards[0]
+
+      // Partner dont have trump card
+      if (!isTrumOpp1 && !isTrumOpp2) {
+        if (second.length != 0) return second
+        return first
+      }
     }
-    if (nonTrumpCards.length > 0) return nonTrumpCards[0]
+    console.log('mySortedCards', nonTrumpCards)
+
+    if (nonTrumpCards.length > 0) {
+      let lastCard = sortCard(nonTrumpCards)[0]
+
+      if (isZeroCard(lastCard)) return lastCard
+    }
+    console.log(mySortedCards)
     return mySortedCards[0]
   }
-
-  //only non trump card
-  // if (nonTrumpCards.length === 1) return last(nonTrumpCards)
 
   if (nonTrumpCards.length > 0) {
     let nonTrump = nonTrumpCards.slice()
     let sNonTrump = sortCard(nonTrump)
-
+    console.log('sNonTrump', sNonTrump)
     if (sNonTrump.length > 1) {
       while (sNonTrump.length > 1) {
         let highestValueCards = last(sNonTrump)
@@ -142,50 +158,67 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
           getSuit(highestValueCards),
           handsHistory
         )
-
         let highestSuitCards = getSuitCards(myCards, getSuit(highestValueCards))
         // all not played cards - mycards
         let finalLeftCards = getRemainingCards(notPlayedCards, highestSuitCards)
 
         if (finalLeftCards.length === 0) return highestValueCards
 
-        highestValueCards = sNonTrump.splice(sNonTrump.length - 1, 1)
-
-        if (!isHigherCard(finalLeftCards, highestValueCards[0], handsHistory)) {
-          return highestValueCards[0]
+        if (!isHigherCard(finalLeftCards, highestValueCards)) {
+          return highestValueCards
         }
+
+        sNonTrump.splice(sNonTrump.length - 1, 1)
       }
     }
-    return sNonTrump[0]
+    console.log(nonTrumpCards)
+
+    return sortCard(nonTrumpCards)[0]
   }
 
-  const mySortedCardsOriginal = mySortedCards.slice()
-console.log("mySortedCardsOriginal",mySortedCardsOriginal)
-  while (mySortedCards.length > 1) {
-    let highestValueCards = last(mySortedCards)
+  // if first place is not jack throw lower card / that has highest number
+
+  if (handsHistory.length <= 2) {
+    // if i have trump suit throw one that you have leat card
+    if (getFace(last(mySortedCards)) !== 'J' && trumpSuit)
+      return sortCard(suitCard)[0]
+    // if i have jack check if you have send same suit card again
+    if (
+      handsHistory.length > 0 &&
+      handsHistory[handsHistory.length - 1][0] === ownId
+    ) {
+      // if im the first player in prev game check my card suit
+      let prevCard = handsHistory[handsHistory.length - 1][1][0]
+      if (
+        getSuit(prevCard) === getSuit(last(mySortedCards)) &&
+        getFace(secondLast(mySortedCards)) === 'J'
+      )
+        return secondLast(mySortedCards)
+    }
+    return suitCard[0]
+  }
+  temp = mySortedCards.slice()
+
+  while (temp.length > 1) {
+    let highestValueCards = last(temp)
 
     let notPlayedCards = cardsNotPlayed(
       getSuit(highestValueCards),
       handsHistory
     )
 
-    let highestSuitCards = getSuitCards(myCards, getSuit(highestValueCards))
+    let highestSuitCards = getSuitCards(ownCards, getSuit(highestValueCards))
 
     let finalLeftCards = getRemainingCards(notPlayedCards, highestSuitCards)
     //if no other card left
     if (finalLeftCards.length === 0) return highestValueCards
 
-    highestValueCards = mySortedCards.splice(myCards.length - 1, 1)
-
-    console.log("finalLeftCards",finalLeftCards,highestValueCards[0])
-
+    highestValueCards = temp.splice(temp.length - 1, 1)
     if (!isHigherCard(finalLeftCards, highestValueCards[0])) {
-
       return highestValueCards[0]
     }
   }
-
-  return mySortedCardsOriginal[0]
+  return mySortedCards[0]
 }
 
 module.exports = firstHand

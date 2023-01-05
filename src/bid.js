@@ -1,4 +1,5 @@
 /**
+ * 
  * @payload
   {
     "playerId": "A1", // own player id
@@ -27,6 +28,8 @@ function bid (payload) {
   const playerIds = payload.playerIds
   const playerId = payload.playerId
   const myCardValue = getCardValue(cards)
+  const ownIndex = playerIds.indexOf(payload.playerId)
+  const partnerIndex = (ownIndex + 2 + 4) % 4
 
   if (bidHistory.length === 0) {
     if (myCardValue == MIN_BID)
@@ -43,8 +46,6 @@ function bid (payload) {
   }
 
   const highestBid = getHighestBid(bidHistory)
-  const ownIndex = playerIds.indexOf(playerId)
-
 
   // if plala ko player has passed bid
   if (bidState.defenderBid === 0) {
@@ -52,7 +53,7 @@ function bid (payload) {
       return {
         bid: 17
       }
-    else if (myCardValue === 16) {
+    else if (myCardValue === MIN_BID) {
       return {
         bid: MIN_BID
       }
@@ -61,41 +62,30 @@ function bid (payload) {
       bid: PASS_BID
     }
   }
-  //  If  im the highest bidder
-  // for matched case
-
+  // partner is the bidder
   if (
-    ownIndex === playerIds.indexOf(bidState.defenderId)
-  ) {
-    console.log("Challenging mode ")
-    
-    if (myCardValue > bidState.challengerBid)
-      return {
-        bid: highestBid.value + 1
-      }
-    else
-      return {
-        bid: PASS_BID
-      }
-  }
-  // if partner is bidding
+    bidState.defenderId === playerIds[partnerIndex] &&
+    bidState.defenderBid == MIN_BID &&
+    myCardValue > MIN_BID
+  )
+    return { bid: myCardValue }
 
+  // if challenges
   if (
-    (ownIndex - 2 + 4) % 4 === playerIds.indexOf(bidState.defenderId) &&
-    highestBid.value > MIN_BID
-  ) {
+    bidState.defenderId === playerIds[ownIndex] &&
+    bidState.challengerBid <= myCardValue
+  )
+    return { bid: bidState.challengerBid }
+
+  if (myCardValue > bidState.defenderBid)
+    return {
+      bid: bidState.defenderBid + 1
+    }
+  else
     return {
       bid: PASS_BID
     }
-  }
-  // if my card value is equal to highest bid - > challange
-  // console.log("--- match case ",bidState)
 
-  // if (myCardValue >= bidState.defenderBid) {
-  //   return {
-  //     bid: myCardValue
-  //   }
-  // }
   if (myCardValue > highestBid.value && highestBid.value <= 19) {
     return {
       bid: highestBid.value + 1
@@ -130,6 +120,11 @@ function getCardValue (cards) {
     faces[x[0]] = (faces[x[0]] || 0) + 1
     suits[x[1]] = (suits[x[1]] || 0) + 1
   })
+
+  // if you have more than 3 card from same suit bit 17 no matter what
+  for (var key in suits) {
+    if (suits[key] >= 3) return 17
+  }
 
   let result = 0
   cardSuits.map(s => {
@@ -179,12 +174,6 @@ function getCardValue (cards) {
 }
 
 function getHighestBid (bidHistory) {
-  // const bids = bidHistory.map(function (x) {
-  //   return x[1]
-  // })
-  // var max = Math.max.apply(0, bids)
-  // return max
-
   const bid = {}
   bid.value = 0
 

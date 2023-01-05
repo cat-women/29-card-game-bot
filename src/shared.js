@@ -28,7 +28,7 @@ function sortCard (cards) {
 }
 
 function cardsNotPlayed (cardSuit, handsHistory) {
-  const cards = Deck[cardSuit]
+  const cards = Deck[cardSuit].slice()
 
   if (handsHistory.length === 0) return cards
 
@@ -64,6 +64,7 @@ function currentWinning (myCards, cardSuit, handsHistory) {
 }
 
 function getRemainingCards (allCards, myCards) {
+
   if (myCards.length === 0) return allCards
 
   myCards.map(card => {
@@ -74,6 +75,7 @@ function getRemainingCards (allCards, myCards) {
 }
 
 function isHigherCard (myCard, opponentCard) {
+  console.log(myCard,opponentCard)
   if (card[getFace(last(sortCard(myCard)))] > card[getFace(opponentCard)])
     return true
   return false
