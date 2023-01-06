@@ -435,9 +435,17 @@ function thirdHand (
     return first
   }
   if (nullify(myTeam, oppTeam, handsHistory)) return mySortedCards[0]
+  if (handsHistory.length < 4 && myTeam.bid !== 0) return mySortedCards[0]
 
   return 0
 }
+
+// end of firstHand function 
+
+
+
+
+
 function whoIsWinning (
   ownId,
   playersIds,

@@ -197,6 +197,7 @@ function nullify (myTeam, oppTeam, handsHistory) {
       myTeam.won < myTeam.bid * 0.7)
   )
     return true
+
   return false
 }
 
@@ -217,7 +218,7 @@ function cardSuit (cards) {
 
 function isZeroCard (card) {
   let face = getFace(card)
-  if (face === 'K'|| face === 'Q' || face === '7' || face === '8') return true
+  if (face === 'K' || face === 'Q' || face === '7' || face === '8') return true
   return false
 }
 module.exports = {
@@ -230,5 +231,4 @@ module.exports = {
   haveTrumpCard,
   nullify,
   cardSuit,
-  isZeroCard
-}
+  isZeroCard}
