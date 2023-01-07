@@ -35,7 +35,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
   let nonTrumpCards = ''
 
   let firstCard = last(mySortedCards)
-  let secondCard = '6F'
+  let secondCard = false
 
   let firstSuitCard = getSuitCards(myCards, getSuit(firstCard))
   if (firstSuitCard.length > 0) {
@@ -53,6 +53,7 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
     }
   }
   if (
+    secondCard &&
     getFace(firstCard) === 'J' &&
     getFace(secondCard) === '9' &&
     handsHistory.length < 3
