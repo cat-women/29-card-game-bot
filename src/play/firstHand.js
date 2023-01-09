@@ -161,7 +161,6 @@ function firstHand (myCards, trumpSuit, trumpRevealed, handsHistory, payload) {
   }
 
   const mySortedCardsOriginal = mySortedCards.slice()
-console.log("mySortedCardsOriginal",mySortedCardsOriginal)
   while (mySortedCards.length > 1) {
     let highestValueCards = last(mySortedCards)
 
@@ -178,7 +177,6 @@ console.log("mySortedCardsOriginal",mySortedCardsOriginal)
 
     highestValueCards = mySortedCards.splice(myCards.length - 1, 1)
 
-    console.log("finalLeftCards",finalLeftCards,highestValueCards[0])
 
     if (!isHigherCard(finalLeftCards, highestValueCards[0])) {
 
