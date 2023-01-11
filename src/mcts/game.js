@@ -16,19 +16,26 @@ const {
   isHigherCard
 } = require('../shared')
 
-
 class Game {
   nextPlayer (state) {
-    const first_player_index =  state.playersIds.indexOf(state.firstPlayer)
-    return (first_player_index+1+4) % 4
+    const first_player_index = state.playersIds.indexOf(state.firstPlayer)
+    return (first_player_index + 1 + 4) % 4
   }
-  
-  legalMove (state,cards, trumpSuit) {
+
+  legalMove (state) {
+
+
+    
+    let currentPlayer = state.currentPlayer
+    console.log(currentPlayer)
+    let cards = state.otherCards.get("Bot 0")
+    console.log("cards",cards)
     if (state.played_cards.length === 0) return cards
+
     const suitCards = getSuitCards(cards, getSuit(state.played_cards[0]))
     if (suitCards.length > 0) return suitCards
-    else if (trumpSuit) {
-      const trumpSuitCards = getSuitCards(cards, trumpSuit)
+    else if (state.trumpSuit) {
+      const trumpSuitCards = getSuitCards(cards, state.trumpSuit)
       return trumpSuitCards
     }
     return false

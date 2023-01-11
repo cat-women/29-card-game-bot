@@ -6,7 +6,8 @@ class State {
     currentPlayer,
     played_cards,
     playersIds,
-    firstPlayer
+    firstPlayer,
+    trumpSuit
   ) {
     this.firstPlayer = firstPlayer
     this.playersIds = playersIds.slice()
@@ -15,6 +16,7 @@ class State {
     this.handsHistory = handsHistory
     this.myCards = myCards
     this.deck = deck
+    this.trumpSuit = trumpSuit
     this.playable_deck = this.removeMyCards(this.myCards)
 
     this.otherCards = new Map()
@@ -22,7 +24,6 @@ class State {
     // assign car to other
     playersIds.splice(playersIds.indexOf(currentPlayer), 1)
 
-    playersIds.map(id => this.otherCards.set(id, []))
 
     let j = 3
     playersIds.map((id, i) => {
@@ -32,6 +33,7 @@ class State {
         this.playable_deck.splice(0, this.cardLength(this.playable_deck) / j)
       )
     })
+
   }
 
   cardLength (card) {
@@ -55,6 +57,10 @@ class State {
       }
     })
     return this.deck.playable_deck
+  }
+  // 
+  hash() {
+    return JSON.stringify(this.handsHistory)
   }
 }
 
