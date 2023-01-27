@@ -7,11 +7,12 @@ class MonteCarloNode {
     this.n_wins = 0
 
     this.parent = parent
-    this.chilren = new Map()
+    this.children = new Map()
 
     for (let play of unexpandedPlays) {
-      this.chilren.set(play.hash(), { play: play, node: null })
+      this.children.set(JSON.stringify(play), { play: play, node: null })
     }
+    
   }
 
   //   child

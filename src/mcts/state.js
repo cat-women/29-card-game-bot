@@ -58,6 +58,9 @@ class State {
     })
     return this.deck.playable_deck
   }
+  isPlayer(player) {
+    return (player === this.player)
+  }
   // 
   hash() {
     return JSON.stringify(this.handsHistory)
