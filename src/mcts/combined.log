@@ -1,0 +1,20 @@
+{"level":"info","message":"starting node: [object Object]"}
+{"level":"info","message":"expand play: 7H \n and legal plays 7H,8H,7D,QD,7S,TS,KS \n node state [object Object]"}
+{"level":"info","message":"expand play: QH \n and legal plays QH \n node state [object Object]"}
+{"level":"info","message":"expand play: 9C \n and legal plays TD,9S,9C,JC,7C,8D,TC \n node state [object Object]"}
+{"level":"info","message":"expand play: TH \n and legal plays TH \n node state [object Object]"}
+{"level":"info","message":"expand play: QH \n and legal plays QH \n node state [object Object]"}
+{"level":"info","message":"expand play: 9C \n and legal plays TD,9S,9C,JC,7C,8D,TC \n node state [object Object]"}
+{"level":"info","message":"expand play: TH \n and legal plays TH \n node state [object Object]"}
+{"level":"info","message":"expand play: TH \n and legal plays TH \n node state [object Object]"}
+{"level":"info","message":"expand play: 7H \n and legal plays 7H,8H \n node state [object Object]"}
+{"level":"info","message":"expand play: QH \n and legal plays QH \n node state [object Object]"}
+{"level":"info","message":"expand play: TH \n and legal plays TH \n node state [object Object]"}
+{"level":"info","message":"expand play: 8H \n and legal plays 7H,8H \n node state [object Object]"}
+{"level":"info","message":"expand play: QH \n and legal plays QH \n node state [object Object]"}
+{"level":"info","message":"expand play: 8H \n and legal plays 7H,8H \n node state [object Object]"}
+{"level":"info","message":"expand play: QH \n and legal plays QH \n node state [object Object]"}
+{"level":"info","message":"statistics: "}
+{"level":"info","message":"state: [object Object]"}
+{"level":"info","message":"chosen play:"}
+{"level":"info","message":"final winner: Xnp5spLG"}

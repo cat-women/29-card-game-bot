@@ -15,68 +15,97 @@ const {
   getRemainingCards,
   isHigherCard
 } = require('../shared')
+const State = require('./state')
 
 class Game {
   nextPlayer (state) {
-    const first_player_index = state.playersIds.indexOf(state.firstPlayer)
-    return (first_player_index + 1 + 4) % 4
+    const first_player_index = state.playersIds.indexOf(state.currentPlayer)
+    return state.playersIds[(first_player_index + 1 + 4) % 4]
   }
 
   legalPlays (state) {
     let currentPlayer = state.currentPlayer
-    let cards = state.otherCards.get(state.firstPlayer)
-    if (state.played_cards.length === 0) return cards
+    let cards = state.currentPlayerCards
+    let played_cards = state.played_cards.slice()
 
-    const suitCards = getSuitCards(cards, getSuit(state.played_cards[0]))
+    if (played_cards.length === 4) return []
+
+    if (played_cards.length === 0 && cards.length !== 0) return cards
+
+    const suitCards = getSuitCards(cards, getSuit(played_cards[0]))
     if (suitCards.length > 0) return suitCards
-    else if (state.trumpSuit) {
-      const trumpSuitCards = getSuitCards(cards, state.trumpSuit)
-      return trumpSuitCards
-    }
-    return false
+    return cards
   }
 
-
-  nextState(state, play) {
+  nextState (state, play) {
     let newHistory = state.handsHistory.slice() // 1-deep copy
-    newHistory.push(play)
-    let newBoard = state.board.map((row) => row.slice())
-    newBoard[play.row][play.col] = state.player
-    let newPlayer = -state.player
 
-    return new State(newHistory, newBoard, newPlayer)
+    state.played_cards.push(play)
+
+    let firstPlayer = state.firstPlayer
+
+    let player = this.nextPlayer(state)
+
+    // if (state.played_cards.length === 4) return null
+
+    let cards = state.remainingCards.get(player)
+
+    // let remainingCards = this.removePlayedCards(state, play)
+    return new State(
+      newHistory,
+      cards,
+      player,
+      state.played_cards,
+      firstPlayer,
+      state.playersIds,
+      state.trumpSuit,
+      state.bidHistory,
+      state.remainingCards
+    )
   }
+
   winner (state) {
     let played_cards = state.played_cards.slice()
 
-    if (state.played_cards.length === 4) {
+    if (state.played_cards.length >= 4) {
       let winingCard
       if (state.trumpSuit) {
-        const trumpSuitCards = getSuitCards(state.played_cards, state.trumpSuit)
+        const trumpSuitCards = getSuitCards(played_cards, state.trumpSuit)
         if (trumpSuitCards.length > 0)
           winingCard = last(sortCard(trumpSuitCards))
         else {
-          const suitCards = getSuitCards(
-            state.played_cards,
-            getSuit(state.played_cards[0])
-          )
+          const suitCards = getSuitCards(played_cards, getSuit(played_cards[0]))
           winingCard = last(sortCard(suitCards))
         }
       } else {
-        const suitCards = getSuitCards(
-          state.played_cards,
-          getSuit(state.played_cards[0])
-        )
-        winingCard = last(sortCard(suitCards))
+        // const suitCards = getSuitCards(
+        //   state.played_cards,
+        //   getSuit(state.played_cards[0])
+        // )
+        winingCard = last(sortCard(state.played_cards.slice()))
       }
-      const index_of_winningcard = played_cards.indexOf(winingCard)
+      const index_of_winningcard = state.played_cards.indexOf(winingCard)
       const first_player_index = state.playersIds.indexOf(state.firstPlayer)
+      let winner =
+        state.playersIds[(index_of_winningcard + first_player_index + 4) % 4]
+      state.firstPlayer = winner
+      state.currentPlayer = winner
+      let newHistory = [state.firstPlayer, state.played_cards.slice(), winner]
+      state.handsHistory.push(newHistory)
+      state.played_cards = []
 
-      return state.playersIds[
-        (index_of_winningcard + first_player_index + 4) % 4
-      ]
+      return winner
     } else return null
   }
-}
 
+  removePlayedCards (state, card) {
+    let cards = state.remainingCards.get(state.currentPlayer)
+
+    if (cards.includes(card)) {
+      let index = cards.indexOf(card)
+      cards.splice(index, 1)
+    }
+    return state.remainingCards
+  }
+}
 module.exports = Game

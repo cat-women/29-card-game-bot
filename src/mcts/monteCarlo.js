@@ -38,23 +38,28 @@ class MonteCarlo {
   runSearch (state, timeout = 3) {
     this.makeNode(state)
 
-    let draws = 0
+    let node = this.select(state)
     let totalSims = 0
 
-    let end = Date.now() + timeout * 1000
-    while (Date.now() < end) {
-      let node = this.select(state)
-
+    let end = Date.now() + timeout * 50
+    let i = 0
+    console.log('starting node ', node)
+    while (i < 10) {
+      node = this.expand(node)
+      console.log('=========iteration=======,', i, 'node', this)
       let winner = this.game.winner(node.state)
+      let nodes = node.children
       if (node.isLeaf() === false && winner === null) {
         node = this.expand(node)
         winner = this.simulate(node)
       }
+
       this.backpropagate(node, winner)
-      if (winner === 0) draws++
+
       totalSims++
+      i++
     }
-    return { runtime: timeout, simulations: totalSims, draws: draws }
+    return { runtime: timeout, simulations: totalSims }
   }
 
   /**
@@ -64,40 +69,40 @@ class MonteCarlo {
    * @return {Play} The best play, according to the given policy.
    */
   bestPlay (state, policy = 'robust') {
-    this.makeNode(state)
-
+    // this.makeNode(state)
+    // console.log('robost best play ', this.nodes.get(state.hash()))
     // If not all children are expanded, not enough information
-    if (this.nodes.get(state.hash()).isFullyExpanded() === false)
-      throw new Error('Not enough information!')
+    // if (this.nodes.get(state.hash()).isFullyExpanded() === false)
+    //   throw new Error('Not enough information!')
 
     let node = this.nodes.get(state.hash())
     let allPlays = node.allPlays()
     let bestPlay
-
+    console.log('all plays', allPlays)
     // Most visits (robust child)
-    if (policy === 'robust') {
-      let max = -Infinity
-      for (let play of allPlays) {
-        let childNode = node.childNode(play)
-        if (childNode.n_plays > max) {
-          bestPlay = play
-          max = childNode.n_plays
-        }
-      }
-    }
+    // if (policy === 'robust') {
+    //   let max = -Infinity
+    //   for (let play of allPlays) {
+    //     let childNode = node.childNode(play)
+    //     if (childNode.n_plays > max) {
+    //       bestPlay = play
+    //       max = childNode.n_plays
+    //     }
+    //   }
+    // }
 
     // Highest winrate (max child)
-    else if (policy === 'max') {
-      let max = -Infinity
-      for (let play of allPlays) {
-        let childNode = node.childNode(play)
-        let ratio = childNode.n_wins / childNode.n_plays
-        if (ratio > max) {
-          bestPlay = play
-          max = ratio
-        }
+    // else if (policy === 'max') {
+    let max = -Infinity
+    for (let play of allPlays) {
+      let childNode = node.childNode(play)
+      let ratio = childNode.n_wins / childNode.n_plays
+      if (ratio > max) {
+        bestPlay = play
+        max = ratio
       }
     }
+    // }
 
     return bestPlay
   }
@@ -133,14 +138,25 @@ class MonteCarlo {
    * @return {MonteCarloNode} The new expanded child node.
    */
   expand (node) {
-    let plays = node.unexpandedPlays()
+    let plays = node.unexpandedPlays().slice()
     let index = Math.floor(Math.random() * plays.length)
     let play = plays[index]
 
     let childState = this.game.nextState(node.state, play)
+
     let childUnexpandedPlays = this.game.legalPlays(childState)
+
     let childNode = node.expand(play, childState, childUnexpandedPlays)
+
     this.nodes.set(childState.hash(), childNode)
+    console.log(
+      'expand play',
+      play,
+      'and legal plays ',
+      plays,
+      'node',
+      node.state
+    )
 
     return childNode
   }
@@ -161,7 +177,6 @@ class MonteCarlo {
       state = this.game.nextState(state, play)
       winner = this.game.winner(state)
     }
-
     return winner
   }
 

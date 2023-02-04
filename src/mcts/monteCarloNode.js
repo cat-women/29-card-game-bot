@@ -3,21 +3,19 @@ class MonteCarloNode {
     this.play = play
     this.state = state
 
-    this.n_playes = 0
+    this.n_plays = 0
     this.n_wins = 0
 
     this.parent = parent
     this.children = new Map()
-
     for (let play of unexpandedPlays) {
-      this.children.set(JSON.stringify(play), { play: play, node: null })
+      this.children.set(play, { play: play, node: null })
     }
-    
   }
 
   //   child
   childNode (play) {
-    let child = this.chilren.get(play.hash())
+    let child = this.children.get(play)
     if (child === undefined) throw new Error('you dont have child')
     else if (child.node === null) throw new Error('Child not expanded ')
     return child.node
@@ -25,9 +23,10 @@ class MonteCarloNode {
 
   //   expading all child
   expand (play, childState, unexpandedPlays) {
-    if (!this.chilren.has(play.hash())) throw new Error('No such play exit')
+    if (!this.children.has(play)) throw new Error('No such play exit')
     let childNode = new MonteCarloNode(this, play, childState, unexpandedPlays)
-    this.chilren.set(play.hash(), { play: play, node: childNode })
+    if (childState.played_cards.length < 4)
+      this.children.set(play, { play: play, node: childNode })
     return childNode
   }
 

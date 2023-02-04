@@ -1,0 +1,127 @@
+// Initialize the root node of the MCTS tree
+root = new Node(initial_state)
+
+// Set the number of simulations per turn
+simulations = 1000
+
+// Main loop
+while(game_not_over) {
+    // Select the best child node of the root node using the UCB1 algorithm
+    selected_node = UCB1(root)
+
+    // If the selected node is a leaf node, expand it and simulate the game
+    if(selected_node.is_leaf()) {
+        expand_node(selected_node)
+        simulate(selected_node, simulations)
+    }
+
+    // Update the root node to the selected node
+    root = selected_node
+
+    // Make the move corresponding to the selected node
+    make_move(selected_node.move)
+}
+
+function MCTS(root: Node) -> Move:
+    while not time_is_up():
+        leaf = traverse(root)
+        if leaf is a terminal node:
+            value = leaf.evaluate()
+        else:
+            value = rollout(leaf)
+        backpropagate(leaf, value)
+    return best_child(root)
+
+function traverse(node: Node) -> Node:
+    while not node.is_leaf():
+        if node.has_untried_moves():
+            return expand(node)
+        else:
+            node = best_child(node, exploration_constant)
+    return node
+
+?=================>
+function expand(node: Node) -> Node:
+    move = node.get_untried_move()
+    child = node.add_child(move)
+    return child
+
+function rollout(node: Node) -> float:
+    simulate the outcome of the game starting from node.
+    return the value of the outcome
+
+function backpropagate(node: Node, value: float) -> None:
+    while node is not None:
+        update statistics of node
+        node = node.parent
+
+function best_child(node: Node, exploration_constant: float) -> Node:
+    return the child of node that has the highest value + exploration_constant * sqrt(ln(node.visits) / child.visits)
+
+
+// Get the best move from the MCTS tree
+best_move = get_best_move(root)
+
+
+==>>
+import random
+
+class Node:
+    def __init__(self, state, parent=None):
+        self.state = state
+        self.parent = parent
+        self.children = []
+        self.visits = 0
+        self.wins = 0
+
+    def select_child(self):
+        """Select child with the highest UCB1 score"""
+        ucb1_scores = [child.get_ucb1() for child in self.children]
+        max_score = max(ucb1_scores)
+        max_children = [child for child in self.children if child.get_ucb1() == max_score]
+        return random.choice(max_children)
+
+    def expand(self):
+        """Expand the node by adding all possible children"""
+        possible_states = get_possible_states(self.state)
+        self.children = [Node(state, self) for state in possible_states]
+
+    def update(self, result):
+        """Update the node with the result of a playout"""
+        self.visits += 1
+        self.wins += result
+
+    def get_ucb1(self):
+        """Calculate the UCB1 score for the node"""
+        if self.visits == 0:
+            return float("inf")
+        return self.wins / self.visits + sqrt(2 * log(self.parent.visits) / self.visits)
+
+def monte_carlo_tree_search(root):
+    """Perform the MCTS algorithm on the given root node"""
+    for _ in range(num_playouts):
+        leaf = traverse_tree(root)
+        result = playout(leaf.state)
+        backpropagate(leaf, result)
+
+def traverse_tree(node):
+    """Traverse the tree from the given node to a leaf"""
+    while node.children:
+        node = node.select_child()
+    return node
+
+def playout(state):
+    """Perform a playout from the given state"""
+    while not is_terminal(state):
+        state = random_play(state)
+    return get_result(state)
+
+def backpropagate(node, result):
+    """Backpropagate the result through the tree"""
+    while node:
+        node.update(result)
+        node = node.parent
+
+def get_best_child(node):
+    """Return the child with the highest win rate"""
+    return max(node.children, key=lambda c: c.wins / c.visits)
