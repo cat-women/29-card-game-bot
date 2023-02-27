@@ -13,7 +13,7 @@ const secondHand = require('./secondHand')
 const thirdHand = require('./thirdHand')
 const fourthHand = require('./fourthHand')
 
-function play (payload) {
+function play(payload) {
   const ownCards = payload.cards
   const thisRoundCards = payload.played
   const trumpSuit = payload.trumpSuit
@@ -21,6 +21,7 @@ function play (payload) {
   const handsHistory = payload.handsHistory
   const ownId = payload.playerId
   const playersIds = payload.playerIds
+
   if (ownCards.length === 1) {
     return {
       card: ownCards[0]
@@ -29,8 +30,10 @@ function play (payload) {
 
   // first hand case
   if (thisRoundCards.length === 0) {
+    let first = firstHand(ownCards, trumpSuit, trumpRevealed, handsHistory, payload)
+    console.log("first hand ", first)
     return {
-      card: firstHand(ownCards, trumpSuit, trumpRevealed, handsHistory, payload)
+      card: first
     }
   }
 
@@ -46,6 +49,7 @@ function play (payload) {
       playersIds,
       payload
     )
+    console.log("second hand ",cardToPlay)
     if (cardToPlay !== 0)
       return {
         card: cardToPlay
@@ -64,6 +68,7 @@ function play (payload) {
       playersIds,
       payload
     )
+    console.log("third hand ",cardToPlay)
     if (cardToPlay !== 0)
       return {
         card: cardToPlay
@@ -82,6 +87,7 @@ function play (payload) {
       playersIds,
       payload
     )
+    console.log("fourth hand ",cardToPlay)
     if (cardToPlay !== 0)
       return {
         card: cardToPlay
@@ -94,73 +100,5 @@ function play (payload) {
     revealTrump: true
   }
 }
-function isPartnerWin (playedCard) {
-  if (last(sortCard(playedCard)) === playedCard[playedCard.length - 2])
-    return true
-  return false
-}
-
-function isOpponetWin (
-  playedCards,
-  mySortedCards,
-  trumpSuit,
-  trumpRevealed,
-  handsHistory
-) {
-  const orginalPlayedCards = playedCards.slice()
-  const sortedCardPlayedCards = sortCard(playedCards)
-
-  if (trumpSuit) {
-    const trumpSuitCards = getSuitCards(playedCards, trumpSuit)
-    const partnerPos = (playedCards.length - 2 + 4) % 4
-
-    if (
-      trumpSuitCards.length === 1 &&
-      orginalPlayedCards.indexOf(trumpSuitCards[0]) === partnerPos
-    )
-      return false
-
-    if (
-      orginalPlayedCards.indexOf(last(sortCard(trumpSuitCards))) === partnerPos
-    )
-      return false
-    // trump card not played
-    if (
-      trumpSuitCards.length === 0 &&
-      currentWinning(
-        mySortedCards,
-        getSuit(orginalPlayedCards[0]),
-        handsHistory
-      )
-    )
-      return false
-    return true
-  }
-  if (
-    currentWinning(mySortedCards, getSuit(orginalPlayedCards[0]), handsHistory)
-  )
-    return false
-  return true
-}
 
 module.exports = play
-/*
-
-
-const playersIds = ['you-0','op-0','you-1','op-1']
-const playedCards = ['9S','JS','KS']
-
-const playerId = 'you-0'
-
-
-const wiiningCard = 'JS'
-const playerIndex = playersIds.indexOf(playerId)
-const winningIndexInPlayedCard = playedCards.indexOf(wiiningCard)
-const result = (playerIndex+winningIndexInPlayedCard+4 - playedCards.length)%4
-
-
-console.log(playersIds[result])
-
-console.log(result)
-
-*/

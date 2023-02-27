@@ -134,9 +134,7 @@ function setPlayedCards (playerIds, history) {
 function haveTrumpCard (payload, player1, player2) {
   const trumpRevealed = payload.trumpRevealed
   const hand = trumpRevealed.hand
-
   const revealer = trumpRevealed.playerId
-
   const playerIds = payload.playerIds
   const handsHistory = payload.handsHistory
 
@@ -147,18 +145,38 @@ function haveTrumpCard (payload, player1, player2) {
   const player2Cards = cardsHistory.get(playerIds[player2])
 
   const trumpSuit = payload.trumpSuit
-
+  // console.log(firstCards,player1Cards,player2Cards)
   var count = 0
   for (var i = 0; i < firstCards.length; i++) {
+    /**
+     * condition for not having trump
+     * could not throw trump while revealing
+     * did not use trump while partner is losing
+     */
     if (
       getSuit(firstCards[i]) !== getSuit(player1Cards[i]) &&
       (getFace(player2Cards[i]) !== 'J' ||
-        handsHistory[i][2] !== playerIds[player2])
+        handsHistory[i][2] !== playerIds[player2]) &&
+      getSuit(player1Cards[i]) === trumpSuit
     )
       count++
   }
   if (count > 0) return true
 
+  // if trump was reveaed in this round
+  if (handsHistory.length === hand - 1) {
+    // if im the revealer return true
+
+    if (revealer === payload.playerId) return true
+    const firstPlayer = handsHistory[hand - 2][2]
+
+    let played = payload.played
+    let diff =
+      (playerIds.indexOf(revealer) - playerIds.indexOf(firstPlayer) + 4) % 4
+    let revealerCard = played[diff]
+    if (getSuit(revealerCard) === trumpSuit) return true
+    return false
+  }
   const revealerPlayedCards = cardsHistory.get(revealer)
   const playedCard = revealerPlayedCards[hand - 1]
 
@@ -166,10 +184,10 @@ function haveTrumpCard (payload, player1, player2) {
     if (getSuit(playedCard) === trumpSuit) return true
   }
 
-  return false
+  return 1
 }
 
-function nullify (myTeam,oppTeam,handsHistory) {
+function nullify (myTeam, oppTeam, handsHistory) {
   if (
     (handsHistory.length > 4 &&
       oppTeam.bid !== 0 &&
@@ -179,9 +197,30 @@ function nullify (myTeam,oppTeam,handsHistory) {
       myTeam.won < myTeam.bid * 0.7)
   )
     return true
+
   return false
 }
 
+function cardSuit (cards) {
+  let cardSuitNumber = {
+    C: 0,
+    D: 0,
+    S: 0,
+    H: 0
+  }
+
+  cards.map(s => {
+    cardSuitNumber[getSuit(s)] += 1
+  })
+
+  return cardSuitNumber
+}
+
+function isZeroCard (card) {
+  let face = getFace(card)
+  if (face === 'K' || face === 'Q' || face === '7' || face === '8') return true
+  return false
+}
 module.exports = {
   remainingPlayerHistory,
   getSecondPlayerCard,
@@ -190,5 +229,6 @@ module.exports = {
   getFinalRemainingCards,
   setPlayedCards,
   haveTrumpCard,
-  nullify
-}
+  nullify,
+  cardSuit,
+  isZeroCard}
